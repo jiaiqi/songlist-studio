@@ -53,9 +53,14 @@ function DashboardPage() {
             <li key={step}>{step}</li>
           ))}
         </ol>
-        <Link className="doc-link" to="/docs">
-          查看项目文档目录规则
-        </Link>
+        <div className="action-row">
+          <Link className="primary-link" to="/library">
+            进入我的曲库
+          </Link>
+          <Link className="doc-link" to="/docs">
+            查看项目文档目录规则
+          </Link>
+        </div>
       </section>
     </main>
   )

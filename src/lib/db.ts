@@ -34,6 +34,20 @@ export async function addSong(draft: SongDraft) {
   return song
 }
 
+export async function addSongs(drafts: SongDraft[]) {
+  const timestamp = now()
+  const songs = drafts.map((draft) => ({
+    ...draft,
+    id: createId('song'),
+    tags: draft.tags ?? [],
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  }))
+
+  await db.songs.bulkAdd(songs)
+  return songs
+}
+
 export async function updateSong(id: string, changes: Partial<SongDraft>) {
   await db.songs.update(id, {
     ...changes,
@@ -43,6 +57,10 @@ export async function updateSong(id: string, changes: Partial<SongDraft>) {
 
 export async function deleteSong(id: string) {
   await db.songs.delete(id)
+}
+
+export async function listSongs() {
+  return db.songs.orderBy('updatedAt').reverse().toArray()
 }
 
 export async function addPlaylist(draft: PlaylistDraft) {
