@@ -157,6 +157,12 @@ h2 {
   color: #fffdfa;
 }
 
+.primary-link.muted {
+  border: 1px solid #e2ded6;
+  background: #fffdfa;
+  color: #3c3835;
+}
+
 .action-row {
   display: flex;
   flex-wrap: wrap;
@@ -178,6 +184,10 @@ h2 {
   border-radius: 12px;
   background: linear-gradient(135deg, #fffdfa 0%, #fff5f7 100%);
   box-shadow: 0 8px 32px rgb(0 0 0 / 6%);
+}
+
+.generator-hero {
+  background: linear-gradient(135deg, #fffdfa 0%, #f2f7f1 100%);
 }
 
 .library-count {
@@ -208,6 +218,13 @@ h2 {
   margin-top: 16px;
 }
 
+.generator-layout {
+  display: grid;
+  grid-template-columns: 340px minmax(0, 1fr);
+  gap: 16px;
+  margin-top: 16px;
+}
+
 .library-tools {
   display: grid;
   align-content: start;
@@ -215,10 +232,17 @@ h2 {
 }
 
 .tool-panel,
-.song-board {
+.song-board,
+.playlist-preview,
+.empty-workflow {
   border: 1px solid #e2ded6;
   border-radius: 12px;
   background: rgb(255 255 255 / 78%);
+}
+
+.generator-form button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 .tool-panel {
@@ -308,6 +332,74 @@ button {
 
 .song-board {
   padding: 20px;
+}
+
+.playlist-preview {
+  padding: 20px;
+}
+
+.preview-sections {
+  display: grid;
+  gap: 14px;
+}
+
+.preview-section {
+  padding: 16px;
+  border: 1px solid #eee8e0;
+  border-radius: 10px;
+  background: #fffdfa;
+}
+
+.preview-section header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.preview-section header strong {
+  color: #2c2c2c;
+  font-size: 18px;
+}
+
+.preview-section header span,
+.preview-section small {
+  color: #7a7470;
+  font-size: 13px;
+}
+
+.preview-section ol {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 22px;
+}
+
+.preview-section li {
+  color: #3c3835;
+  line-height: 1.5;
+}
+
+.preview-section li span {
+  margin-right: 8px;
+}
+
+.empty-workflow {
+  display: grid;
+  gap: 12px;
+  justify-items: start;
+  margin-top: 16px;
+  padding: 28px;
+}
+
+.empty-workflow h2,
+.empty-workflow p {
+  margin: 0;
+}
+
+.empty-workflow p {
+  color: #7a7470;
 }
 
 .song-board-header {
@@ -408,6 +500,7 @@ button {
   .metric-grid,
   .library-hero,
   .library-layout,
+  .generator-layout,
   .song-row,
   .field-grid {
     grid-template-columns: 1fr;

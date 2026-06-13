@@ -1,0 +1,176 @@
+import { useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { useSongs } from '@/hooks/useSongs'
+import { classifySongs } from '@/lib/classify'
+import { addPlaylist } from '@/lib/db'
+import { buildPlaylistDraft } from '@/lib/playlistBuilder'
+import type { CategoryDimension, PlaylistPurpose } from '@/types'
+
+const purposeOptions: Array<{ label: string; value: PlaylistPurpose }> = [
+  { label: '直播点歌单', value: 'live' },
+  { label: 'KTV 歌单', value: 'ktv' },
+  { label: '演出曲目单', value: 'performance' },
+  { label: '练习歌单', value: 'practice' },
+  { label: '主题歌单', value: 'theme' },
+]
+
+const dimensionOptions: Array<{ label: string; value: CategoryDimension }> = [
+  { label: '按歌手', value: 'artist' },
+  { label: '按风格', value: 'genre' },
+  { label: '按语言', value: 'language' },
+  { label: '按情绪', value: 'mood' },
+  { label: '按歌名字数', value: 'titleLength' },
+  { label: '按歌曲状态', value: 'status' },
+]
+
+function GeneratePage() {
+  const { isLoading, songs } = useSongs()
+  const [title, setTitle] = useState('我的点歌单')
+  const [subtitle, setSubtitle] = useState('')
+  const [purpose, setPurpose] = useState<PlaylistPurpose>('live')
+  const [dimension, setDimension] = useState<CategoryDimension>('genre')
+  const [message, setMessage] = useState('')
+
+  const groups = useMemo(() => classifySongs(songs, dimension), [dimension, songs])
+  const visibleGroups = groups.filter((group) => group.songs.length > 0)
+  const canSave = title.trim().length > 0 && songs.length > 0 && visibleGroups.length > 0
+
+  async function handleSaveDraft() {
+    if (!canSave) {
+      setMessage('需要至少 1 首歌曲和歌单标题，才能保存草稿。')
+      return
+    }
+
+    const playlist = await addPlaylist(
+      buildPlaylistDraft({
+        title,
+        subtitle,
+        purpose,
+        dimension,
+        songs,
+      }),
+    )
+
+    setMessage(`已保存草稿《${playlist.title}》，共 ${playlist.sections.length} 个分组。`)
+  }
+
+  return (
+    <main className="app-shell">
+      <Link className="back-link top-link" to="/">
+        返回首页
+      </Link>
+
+      <section className="library-hero generator-hero">
+        <div>
+          <p className="eyebrow">Generate</p>
+          <h1>生成歌单</h1>
+          <p className="summary">选择生成目标和分类维度，先得到一版可保存的歌单草稿。</p>
+        </div>
+        <div className="library-count">
+          <strong>{isLoading ? '...' : songs.length}</strong>
+          <span>首参与生成</span>
+        </div>
+      </section>
+
+      {songs.length === 0 ? (
+        <section className="empty-workflow">
+          <h2>曲库还是空的</h2>
+          <p>先录入几首自己会唱的歌，再回来生成歌单。</p>
+          <Link className="primary-link" to="/library">
+            去添加歌曲
+          </Link>
+        </section>
+      ) : (
+        <section className="generator-layout">
+          <section className="tool-panel generator-form">
+            <div>
+              <p className="section-label">Config</p>
+              <h2>生成配置</h2>
+            </div>
+            <label>
+              歌单标题
+              <input
+                value={title}
+                onChange={(event) => setTitle(event.target.value)}
+                placeholder="例如：今晚点歌单"
+              />
+            </label>
+            <label>
+              副标题
+              <input
+                value={subtitle}
+                onChange={(event) => setSubtitle(event.target.value)}
+                placeholder="例如：2026-06-13 深夜场"
+              />
+            </label>
+            <label>
+              生成目标
+              <select
+                value={purpose}
+                onChange={(event) => setPurpose(event.target.value as PlaylistPurpose)}
+              >
+                {purposeOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              分类维度
+              <select
+                value={dimension}
+                onChange={(event) => setDimension(event.target.value as CategoryDimension)}
+              >
+                {dimensionOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button
+              className="primary-button"
+              disabled={!canSave}
+              type="button"
+              onClick={handleSaveDraft}
+            >
+              保存为草稿歌单
+            </button>
+            {message ? <p className="inline-message">{message}</p> : null}
+          </section>
+
+          <section className="playlist-preview" aria-label="歌单分组预览">
+            <div className="song-board-header">
+              <div>
+                <p className="section-label">Preview</p>
+                <h2>{title || '未命名歌单'}</h2>
+              </div>
+              <span>{visibleGroups.length} 个分组</span>
+            </div>
+            <div className="preview-sections">
+              {visibleGroups.map((group) => (
+                <article className="preview-section" key={group.title}>
+                  <header>
+                    <strong>{group.title}</strong>
+                    <span>{group.songs.length} 首</span>
+                  </header>
+                  <ol>
+                    {group.songs.map((song) => (
+                      <li key={song.id}>
+                        <span>{song.title}</span>
+                        <small>{song.artist || '未填写歌手'}</small>
+                      </li>
+                    ))}
+                  </ol>
+                </article>
+              ))}
+            </div>
+          </section>
+        </section>
+      )}
+    </main>
+  )
+}
+
+export default GeneratePage
