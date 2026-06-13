@@ -1,0 +1,169 @@
+:root {
+  color: #2c2c2c;
+  background: #f7f6f3;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+.app-shell {
+  min-height: 100vh;
+  width: min(100% - 32px, 1080px);
+  margin: 0 auto;
+  padding: 40px 0;
+}
+
+.app-shell.narrow {
+  width: min(100% - 32px, 760px);
+}
+
+.hero-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 180px;
+  gap: 20px;
+  align-items: stretch;
+  padding: 32px;
+  border: 1px solid #e2ded6;
+  border-radius: 12px;
+  background: #fffdfa;
+  box-shadow: 0 8px 32px rgb(0 0 0 / 6%);
+}
+
+.eyebrow {
+  margin: 0 0 10px;
+  color: #e8637a;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(28px, 5vw, 44px);
+  line-height: 1.12;
+  letter-spacing: 0;
+}
+
+.summary {
+  max-width: 560px;
+  margin: 16px 0 0;
+  color: #5c5856;
+  font-size: 16px;
+  line-height: 1.8;
+}
+
+.summary.compact {
+  margin-top: 8px;
+}
+
+.status-card,
+.metric-grid article,
+.workbench,
+.doc-grid article {
+  border: 1px solid #e2ded6;
+  border-radius: 12px;
+  background: rgb(255 255 255 / 72%);
+}
+
+.status-card {
+  display: grid;
+  align-content: center;
+  padding: 18px;
+}
+
+.status-card span,
+.status-card small,
+.metric-grid span,
+.section-label,
+.doc-grid span {
+  color: #7a7470;
+  font-size: 13px;
+}
+
+.status-card strong {
+  margin-top: 8px;
+  color: #e8637a;
+  font-size: 44px;
+  line-height: 1;
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.metric-grid article {
+  display: grid;
+  gap: 6px;
+  padding: 18px;
+}
+
+.metric-grid strong {
+  font-size: 24px;
+}
+
+.workbench {
+  margin-top: 16px;
+  padding: 24px;
+}
+
+.section-label {
+  margin: 0 0 4px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+h2 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.step-list {
+  display: grid;
+  gap: 10px;
+  margin: 20px 0 0;
+  padding-left: 22px;
+}
+
+.step-list li {
+  color: #3c3835;
+  line-height: 1.6;
+}
+
+.doc-link,
+.back-link {
+  display: inline-flex;
+  margin-top: 22px;
+  color: #e8637a;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.doc-grid {
+  display: grid;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.doc-grid article {
+  display: grid;
+  gap: 4px;
+  padding: 16px;
+}
+
+@media (max-width: 720px) {
+  .hero-panel,
+  .metric-grid {
+    grid-template-columns: 1fr;
+  }
+}
