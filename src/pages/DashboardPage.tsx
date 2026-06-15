@@ -6,6 +6,7 @@ const nextSteps = [
   '选择分类维度：歌手、风格、语言、情绪、字数',
   '生成歌单草稿：调整分组、排序和点歌规则',
   '发布到历史：保存缩略图、发布时间和复用入口',
+  '记录待学歌曲：把直播间承诺整理成学歌备忘录',
 ]
 
 function DashboardPage() {
@@ -38,6 +39,10 @@ function DashboardPage() {
           <strong>{isLoading ? '...' : stats.publishedPlaylistCount}</strong>
         </article>
         <article>
+          <span>待学事项</span>
+          <strong>{isLoading ? '...' : stats.learningRequestCount}</strong>
+        </article>
+        <article>
           <span>存储方式</span>
           <strong>IndexedDB</strong>
         </article>
@@ -59,6 +64,9 @@ function DashboardPage() {
           </Link>
           <Link className="primary-link muted" to="/generate">
             生成歌单
+          </Link>
+          <Link className="primary-link muted" to="/history">
+            查看发布历史
           </Link>
           <Link className="doc-link" to="/docs">
             查看项目文档目录规则

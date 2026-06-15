@@ -337,7 +337,7 @@ h2 {
 
 .metric-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
   margin-top: 16px;
 }
@@ -348,6 +348,7 @@ h2 {
 .tool-panel,
 .song-board,
 .playlist-preview,
+.record-card,
 .empty-workflow {
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -537,6 +538,10 @@ button:disabled {
   width: 132px;
 }
 
+.compact-panel {
+  margin-top: 16px;
+}
+
 .inline-message {
   margin: 0 0 12px;
   padding: 10px 12px;
@@ -548,9 +553,15 @@ button:disabled {
 
 .song-list,
 .preview-sections,
+.record-grid,
 .doc-grid {
   display: grid;
   gap: 10px;
+}
+
+.record-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 16px;
 }
 
 .song-row,
@@ -638,6 +649,86 @@ button:disabled {
   color: var(--text);
 }
 
+.preview-subtitle,
+.preview-rules {
+  margin: 0 0 12px;
+  color: var(--text-muted);
+  line-height: 1.7;
+}
+
+.preview-rules {
+  padding: 12px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+}
+
+.record-card {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+}
+
+.record-card header,
+.record-card dl,
+.record-card dl div {
+  display: flex;
+  align-items: center;
+}
+
+.record-card header {
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.record-card h2,
+.record-card p,
+.record-card dl {
+  margin: 0;
+}
+
+.record-card h2 {
+  color: var(--text);
+  font-size: 20px;
+}
+
+.record-card p,
+.record-card small,
+.record-card dt {
+  color: var(--text-muted);
+}
+
+.record-card dl {
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.record-card dl div {
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+}
+
+.record-card dd {
+  margin: 0;
+  color: var(--text);
+  font-weight: 800;
+}
+
+.status-pill {
+  display: inline-flex;
+  min-height: 26px;
+  align-items: center;
+  border: 1px solid color-mix(in srgb, var(--accent) 42%, var(--border));
+  border-radius: 999px;
+  padding: 0 10px;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 900;
+}
+
 .empty-workflow {
   display: grid;
   gap: 12px;
@@ -668,7 +759,8 @@ button:disabled {
   .metric-grid,
   .library-hero,
   .library-layout,
-  .generator-layout {
+  .generator-layout,
+  .record-grid {
     grid-template-columns: 1fr;
   }
 

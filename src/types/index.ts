@@ -1,5 +1,10 @@
 export type { BackgroundConfig, BackgroundType } from './background'
 export type {
+  LearningRequest,
+  LearningRequestDraft,
+  LearningRequestStatus,
+} from './learning'
+export type {
   CategoryDimension,
   Playlist,
   PlaylistDraft,

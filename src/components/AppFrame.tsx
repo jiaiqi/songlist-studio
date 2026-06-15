@@ -6,6 +6,7 @@ const navItems = [
   { label: '工作台', to: '/' },
   { label: '我的曲库', to: '/library' },
   { label: '生成歌单', to: '/generate' },
+  { label: '发布历史', to: '/history' },
   { label: '文档', to: '/docs' },
 ]
 

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useSongs } from '@/hooks/useSongs'
 import { classifySongs } from '@/lib/classify'
 import { addPlaylist } from '@/lib/db'
@@ -24,6 +24,7 @@ const dimensionOptions: Array<{ label: string; value: CategoryDimension }> = [
 ]
 
 function GeneratePage() {
+  const navigate = useNavigate()
   const { isLoading, songs } = useSongs()
   const [title, setTitle] = useState('我的点歌单')
   const [subtitle, setSubtitle] = useState('')
@@ -52,6 +53,7 @@ function GeneratePage() {
     )
 
     setMessage(`已保存草稿《${playlist.title}》，共 ${playlist.sections.length} 个分组。`)
+    navigate(`/playlists/${playlist.id}`)
   }
 
   return (
