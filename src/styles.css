@@ -552,6 +552,7 @@ button:disabled {
 }
 
 .song-list,
+.learning-list,
 .preview-sections,
 .record-grid,
 .doc-grid {
@@ -565,6 +566,7 @@ button:disabled {
 }
 
 .song-row,
+.learning-card,
 .preview-section,
 .doc-grid article {
   border: 1px solid var(--border);
@@ -578,6 +580,71 @@ button:disabled {
   gap: 12px;
   align-items: center;
   padding: 12px;
+}
+
+.learning-card {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+
+.learning-card header,
+.learning-card dl,
+.learning-card dl div {
+  display: flex;
+  align-items: center;
+}
+
+.learning-card header {
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.learning-card header div {
+  min-width: 0;
+}
+
+.learning-card strong,
+.learning-card span {
+  display: block;
+}
+
+.learning-card strong {
+  color: var(--text);
+  font-size: 18px;
+}
+
+.learning-card span,
+.learning-card p,
+.learning-card dt {
+  color: var(--text-muted);
+}
+
+.learning-card p,
+.learning-card dl {
+  margin: 0;
+}
+
+.learning-card dl {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.learning-card dl div {
+  gap: 6px;
+  padding: 7px 9px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+}
+
+.learning-card dd {
+  margin: 0;
+  color: var(--text);
+  font-weight: 800;
+}
+
+.learning-card .action-row select {
+  width: 128px;
 }
 
 .song-row strong,

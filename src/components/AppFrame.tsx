@@ -7,6 +7,7 @@ const navItems = [
   { label: '我的曲库', to: '/library' },
   { label: '生成歌单', to: '/generate' },
   { label: '发布历史', to: '/history' },
+  { label: '学歌备忘录', to: '/learning' },
   { label: '文档', to: '/docs' },
 ]
 

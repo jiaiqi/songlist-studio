@@ -68,6 +68,9 @@ function DashboardPage() {
           <Link className="primary-link muted" to="/history">
             查看发布历史
           </Link>
+          <Link className="primary-link muted" to="/learning">
+            记待学歌曲
+          </Link>
           <Link className="doc-link" to="/docs">
             查看项目文档目录规则
           </Link>
