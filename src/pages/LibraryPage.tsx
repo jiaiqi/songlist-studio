@@ -1,5 +1,4 @@
 import { type FormEvent, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { useSongs } from '@/hooks/useSongs'
 import { addSong, addSongs, deleteSong } from '@/lib/db'
 import { createSongDraft, parseSongImport } from '@/lib/songImport'
@@ -68,10 +67,6 @@ function LibraryPage() {
 
   return (
     <main className="app-shell">
-      <Link className="back-link top-link" to="/">
-        返回首页
-      </Link>
-
       <section className="library-hero">
         <div>
           <p className="eyebrow">Library</p>

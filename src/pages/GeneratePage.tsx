@@ -56,10 +56,6 @@ function GeneratePage() {
 
   return (
     <main className="app-shell">
-      <Link className="back-link top-link" to="/">
-        返回首页
-      </Link>
-
       <section className="library-hero generator-hero">
         <div>
           <p className="eyebrow">Generate</p>

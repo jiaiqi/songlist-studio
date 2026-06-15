@@ -22,7 +22,7 @@ function DashboardPage() {
           </p>
         </div>
         <section className="status-card" aria-label="本地数据统计">
-          <span>本地曲库</span>
+          <span>当前曲库</span>
           <strong>{isLoading ? '...' : stats.songCount}</strong>
           <small>首歌曲</small>
         </section>
@@ -46,7 +46,7 @@ function DashboardPage() {
       <section className="workbench">
         <div>
           <p className="section-label">开发顺序</p>
-          <h2>现在先把核心闭环搭稳</h2>
+          <h2>从曲库到歌单，先把主流程跑顺</h2>
         </div>
         <ol className="step-list">
           {nextSteps.map((step) => (

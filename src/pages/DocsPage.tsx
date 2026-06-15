@@ -1,11 +1,6 @@
-import { Link } from 'react-router-dom'
-
 function DocsPage() {
   return (
     <main className="app-shell narrow">
-      <Link className="back-link" to="/">
-        返回首页
-      </Link>
       <section className="workbench">
         <p className="section-label">Docs</p>
         <h1>文档统一放在项目内</h1>
