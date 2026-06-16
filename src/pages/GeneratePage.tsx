@@ -31,14 +31,28 @@ function GeneratePage() {
   const [purpose, setPurpose] = useState<PlaylistPurpose>('live')
   const [dimension, setDimension] = useState<CategoryDimension>('genre')
   const [message, setMessage] = useState('')
+  const [statusFilter, setStatusFilter] = useState<'all' | 'requestable' | 'practicing' | 'paused'>('all')
+  const [selectedSongIds, setSelectedSongIds] = useState<Set<string>>(new Set())
 
-  const groups = useMemo(() => classifySongs(songs, dimension), [dimension, songs])
+  const filteredSongs = useMemo(() => {
+    if (statusFilter === 'all') return songs
+    return songs.filter((song) => song.status === statusFilter)
+  }, [songs, statusFilter])
+
+  const allSelected = filteredSongs.length > 0 && selectedSongIds.size === filteredSongs.length
+  const someSelected = selectedSongIds.size > 0 && !allSelected
+
+  const selectedSongs = useMemo(() => {
+    return filteredSongs.filter((song) => selectedSongIds.has(song.id))
+  }, [filteredSongs, selectedSongIds])
+
+  const groups = useMemo(() => classifySongs(selectedSongs, dimension), [dimension, selectedSongs])
   const visibleGroups = groups.filter((group) => group.songs.length > 0)
-  const canSave = title.trim().length > 0 && songs.length > 0 && visibleGroups.length > 0
+  const canSave = title.trim().length > 0 && selectedSongs.length > 0 && visibleGroups.length > 0
 
   async function handleSaveDraft() {
     if (!canSave) {
-      setMessage('需要至少 1 首歌曲和歌单标题，才能保存草稿。')
+      setMessage('需要至少选择 1 首歌曲和填写歌单标题，才能保存草稿。')
       return
     }
 
@@ -48,12 +62,30 @@ function GeneratePage() {
         subtitle,
         purpose,
         dimension,
-        songs,
+        songs: selectedSongs,
       }),
     )
 
     setMessage(`已保存草稿《${playlist.title}》，共 ${playlist.sections.length} 个分组。`)
     navigate(`/playlists/${playlist.id}`)
+  }
+
+  function toggleSelectAll() {
+    if (allSelected) {
+      setSelectedSongIds(new Set())
+    } else {
+      setSelectedSongIds(new Set(filteredSongs.map((s) => s.id)))
+    }
+  }
+
+  function toggleSongSelection(songId: string) {
+    const next = new Set(selectedSongIds)
+    if (next.has(songId)) {
+      next.delete(songId)
+    } else {
+      next.add(songId)
+    }
+    setSelectedSongIds(next)
   }
 
   return (
@@ -141,6 +173,50 @@ function GeneratePage() {
               保存为草稿歌单
             </button>
             {message ? <p className="inline-message">{message}</p> : null}
+          </section>
+
+          <section className="tool-panel song-selector">
+            <div>
+              <p className="section-label">Songs</p>
+              <h2>选择歌曲</h2>
+            </div>
+            <div className="filter-row">
+              <select
+                value={statusFilter}
+                onChange={(event) => {
+                  setStatusFilter(event.target.value as typeof statusFilter)
+                  setSelectedSongIds(new Set())
+                }}
+              >
+                <option value="all">全部状态</option>
+                <option value="requestable">仅可点歌</option>
+                <option value="practicing">仅练习中</option>
+                <option value="paused">仅暂不唱</option>
+              </select>
+              <button className="secondary-button" type="button" onClick={toggleSelectAll}>
+                {allSelected ? '取消全选' : '全选'}
+              </button>
+            </div>
+            <div className="selector-meta">
+              <span>已选 {selectedSongIds.size} / {filteredSongs.length} 首</span>
+              {someSelected ? <span className="hint">部分选择</span> : null}
+            </div>
+            <div className="song-select-list">
+              {filteredSongs.map((song) => (
+                <label className="song-select-row" key={song.id}>
+                  <input
+                    checked={selectedSongIds.has(song.id)}
+                    type="checkbox"
+                    onChange={() => toggleSongSelection(song.id)}
+                  />
+                  <div className="song-select-info">
+                    <strong>{song.title}</strong>
+                    <span>{song.artist || '未填写歌手'}</span>
+                  </div>
+                  <span className="status-pill">{song.genre || '未分类'}</span>
+                </label>
+              ))}
+            </div>
           </section>
 
           <section className="playlist-preview" aria-label="歌单分组预览">

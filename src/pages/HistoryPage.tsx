@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import ConfirmDialog from '@/components/ConfirmDialog'
 import { usePlaylists } from '@/hooks/usePlaylists'
-import { duplicatePlaylist } from '@/lib/db'
+import { deletePlaylist, duplicatePlaylist } from '@/lib/db'
 import type { PlaylistLifecycleStatus } from '@/types'
 
 const statusLabels: Record<PlaylistLifecycleStatus, string> = {
@@ -25,6 +26,8 @@ function HistoryPage() {
   const { isLoading, playlists, refresh } = usePlaylists()
   const [status, setStatus] = useState<'all' | PlaylistLifecycleStatus>('all')
   const [query, setQuery] = useState('')
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
+  const [deleteTitle, setDeleteTitle] = useState('')
 
   const filteredPlaylists = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase()
@@ -44,6 +47,19 @@ function HistoryPage() {
     const playlist = await duplicatePlaylist(id)
     await refresh()
     if (playlist) navigate(`/playlists/${playlist.id}`)
+  }
+
+  function handleDeleteClick(id: string, title: string) {
+    setDeleteTarget(id)
+    setDeleteTitle(title)
+  }
+
+  async function handleConfirmDelete() {
+    if (!deleteTarget) return
+    await deletePlaylist(deleteTarget)
+    setDeleteTarget(null)
+    setDeleteTitle('')
+    await refresh()
   }
 
   return (
@@ -127,11 +143,30 @@ function HistoryPage() {
                 >
                   复制编辑
                 </button>
+                <button
+                  className="icon-button danger"
+                  type="button"
+                  onClick={() => handleDeleteClick(playlist.id, playlist.title)}
+                >
+                  删除
+                </button>
               </div>
             </article>
           ))}
         </section>
       )}
+
+      <ConfirmDialog
+        isOpen={deleteTarget !== null}
+        title="确认删除歌单"
+        message={deleteTitle ? `确定要删除歌单《${deleteTitle}》吗？此操作不可撤销。` : ''}
+        confirmLabel="删除"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => {
+          setDeleteTarget(null)
+          setDeleteTitle('')
+        }}
+      />
     </main>
   )
 }
