@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import ConfirmDialog from '@/components/ConfirmDialog'
+import { useAutoClearMessage } from '@/hooks/useAutoClearMessage'
 import { useLearningRequests } from '@/hooks/useLearningRequests'
 import {
   addLearningRequest,
@@ -59,6 +61,9 @@ function LearningMemoPage() {
   const [message, setMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<LearningRequest | null>(null)
+
+  useAutoClearMessage(message, () => setMessage(''))
 
   async function handleAddRequest() {
     const normalizedTitle = songTitle.trim()
@@ -116,12 +121,17 @@ function LearningMemoPage() {
     }
   }
 
-  async function handleDeleteRequest(id: string) {
-    if (deletingId) return
-    setDeletingId(id)
+  function handleDeleteRequest(request: LearningRequest) {
+    setDeleteTarget(request)
+  }
+
+  async function handleConfirmDelete() {
+    if (!deleteTarget || deletingId) return
+    setDeletingId(deleteTarget.id)
     try {
-      await deleteLearningRequest(id)
+      await deleteLearningRequest(deleteTarget.id)
       setMessage('已删除学歌记录。')
+      setDeleteTarget(null)
       await refresh()
     } catch {
       setMessage('删除失败，请重试。')
@@ -297,7 +307,7 @@ function LearningMemoPage() {
                       className="secondary-button danger"
                       disabled={deletingId === request.id}
                       type="button"
-                      onClick={() => handleDeleteRequest(request.id)}
+                      onClick={() => handleDeleteRequest(request)}
                     >
                       {deletingId === request.id ? '删除中...' : '删除'}
                     </button>
@@ -308,6 +318,19 @@ function LearningMemoPage() {
           )}
         </section>
       </section>
+      <ConfirmDialog
+        isOpen={deleteTarget !== null}
+        title="确认删除"
+        message={
+          deleteTarget
+            ? `确定要删除《${deleteTarget.songTitle}》的学歌记录吗？此操作不可撤销。`
+            : ''
+        }
+        confirmLabel="删除"
+        confirmDisabled={deletingId !== null}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </main>
   )
 }

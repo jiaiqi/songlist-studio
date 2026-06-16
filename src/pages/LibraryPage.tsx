@@ -1,5 +1,7 @@
 import { type FormEvent, useMemo, useState } from 'react'
 import ConfirmDialog from '@/components/ConfirmDialog'
+import EmptyState from '@/components/EmptyState'
+import { useAutoClearMessage } from '@/hooks/useAutoClearMessage'
 import { useSongs } from '@/hooks/useSongs'
 import {
   addLearningRequest,
@@ -44,6 +46,10 @@ function LibraryPage() {
   const [isDeleting, setIsDeleting] = useState(false)
   const [isBatchDeleting, setIsBatchDeleting] = useState(false)
   const [isLoadingSample, setIsLoadingSample] = useState(false)
+  const [isBatchUpdating, setIsBatchUpdating] = useState(false)
+  const [batchStatusTarget, setBatchStatusTarget] = useState<Song['status'] | null>(null)
+
+  useAutoClearMessage(message, () => setMessage(''))
 
   const parsedSongs = useMemo(() => parseSongImport(bulkText), [bulkText])
 
@@ -229,15 +235,27 @@ function LibraryPage() {
     }
   }
 
-  async function handleBatchStatusChange(status: Song['status']) {
+  function handleBatchStatusChange(status: Song['status']) {
     if (selectedIds.size === 0) return
+    setBatchStatusTarget(status)
+  }
+
+  async function handleConfirmBatchStatusChange() {
+    if (!batchStatusTarget || selectedIds.size === 0) return
+    if (isBatchUpdating) return
+    setIsBatchUpdating(true)
     try {
-      await Promise.all(Array.from(selectedIds).map((id) => updateSong(id, { status })))
+      await Promise.all(
+        Array.from(selectedIds).map((id) => updateSong(id, { status: batchStatusTarget })),
+      )
       setMessage(`已批量更新 ${selectedIds.size} 首歌曲的状态。`)
       setSelectedIds(new Set())
+      setBatchStatusTarget(null)
       await refresh()
     } catch {
       setMessage('批量更新失败，请重试。')
+    } finally {
+      setIsBatchUpdating(false)
     }
   }
 
@@ -654,8 +672,10 @@ function LibraryPage() {
               </article>
             ))}
             {!isLoading && filteredSongs.length === 0 ? (
-              <div className="empty-state">
-                <p>还没有匹配的歌曲。先添加几首，下一步才能生成歌单。</p>
+              <EmptyState
+                title="还没有匹配的歌曲。先添加几首，下一步才能生成歌单。"
+                variant="inline"
+              >
                 {songs.length === 0 ? (
                   <button
                     className="secondary-button"
@@ -667,7 +687,7 @@ function LibraryPage() {
                     {isLoadingSample ? '加载中...' : '加载示例歌曲'}
                   </button>
                 ) : null}
-              </div>
+              </EmptyState>
             ) : null}
           </div>
         </section>
@@ -704,6 +724,15 @@ function LibraryPage() {
           setShowLearningPrompt(false)
           setLastAddedSong(null)
         }}
+      />
+      <ConfirmDialog
+        isOpen={batchStatusTarget !== null}
+        title="确认批量修改状态"
+        message={`确定要将选中的 ${selectedIds.size} 首歌曲的状态改为"${batchStatusTarget ? statusLabels[batchStatusTarget] : ''}"吗？`}
+        confirmLabel="确认修改"
+        confirmDisabled={isBatchUpdating}
+        onConfirm={handleConfirmBatchStatusChange}
+        onCancel={() => setBatchStatusTarget(null)}
       />
     </main>
   )
