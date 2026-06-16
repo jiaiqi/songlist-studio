@@ -31,8 +31,11 @@ function GeneratePage() {
   const [purpose, setPurpose] = useState<PlaylistPurpose>('live')
   const [dimension, setDimension] = useState<CategoryDimension>('genre')
   const [message, setMessage] = useState('')
-  const [statusFilter, setStatusFilter] = useState<'all' | 'requestable' | 'practicing' | 'paused'>('all')
+  const [statusFilter, setStatusFilter] = useState<'all' | 'requestable' | 'practicing' | 'paused'>(
+    'all',
+  )
   const [selectedSongIds, setSelectedSongIds] = useState<Set<string>>(new Set())
+  const [isSaving, setIsSaving] = useState(false)
 
   const filteredSongs = useMemo(() => {
     if (statusFilter === 'all') return songs
@@ -56,18 +59,26 @@ function GeneratePage() {
       return
     }
 
-    const playlist = await addPlaylist(
-      buildPlaylistDraft({
-        title,
-        subtitle,
-        purpose,
-        dimension,
-        songs: selectedSongs,
-      }),
-    )
+    if (isSaving) return
+    setIsSaving(true)
 
-    setMessage(`已保存草稿《${playlist.title}》，共 ${playlist.sections.length} 个分组。`)
-    navigate(`/playlists/${playlist.id}`)
+    try {
+      const playlist = await addPlaylist(
+        buildPlaylistDraft({
+          title,
+          subtitle,
+          purpose,
+          dimension,
+          songs: selectedSongs,
+        }),
+      )
+
+      setMessage(`已保存草稿《${playlist.title}》，共 ${playlist.sections.length} 个分组。`)
+      navigate(`/playlists/${playlist.id}`)
+    } catch {
+      setMessage('保存草稿失败，请重试。')
+      setIsSaving(false)
+    }
   }
 
   function toggleSelectAll() {
@@ -166,11 +177,11 @@ function GeneratePage() {
             </label>
             <button
               className="primary-button"
-              disabled={!canSave}
+              disabled={!canSave || isSaving}
               type="button"
               onClick={handleSaveDraft}
             >
-              保存为草稿歌单
+              {isSaving ? '保存中...' : '保存为草稿歌单'}
             </button>
             {message ? <p className="inline-message">{message}</p> : null}
           </section>
@@ -198,7 +209,9 @@ function GeneratePage() {
               </button>
             </div>
             <div className="selector-meta">
-              <span>已选 {selectedSongIds.size} / {filteredSongs.length} 首</span>
+              <span>
+                已选 {selectedSongIds.size} / {filteredSongs.length} 首
+              </span>
               {someSelected ? <span className="hint">部分选择</span> : null}
             </div>
             <div className="song-select-list">

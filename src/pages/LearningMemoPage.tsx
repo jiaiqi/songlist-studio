@@ -3,6 +3,7 @@ import { useLearningRequests } from '@/hooks/useLearningRequests'
 import {
   addLearningRequest,
   addSong,
+  deleteLearningRequest,
   linkLearningRequestToSong,
   updateLearningRequest,
 } from '@/lib/db'
@@ -56,6 +57,8 @@ function LearningMemoPage() {
   const [giftNote, setGiftNote] = useState('')
   const [note, setNote] = useState('')
   const [message, setMessage] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   async function handleAddRequest() {
     const normalizedTitle = songTitle.trim()
@@ -64,36 +67,67 @@ function LearningMemoPage() {
       return
     }
 
-    await addLearningRequest({
-      artist: artist.trim() || undefined,
-      giftNote: giftNote.trim() || undefined,
-      note: note.trim() || undefined,
-      requesterName: requesterName.trim() || undefined,
-      requestedAt: fromDateTimeLocal(requestedAt),
-      songTitle: normalizedTitle,
-      status: 'todo',
-    })
+    if (isSubmitting) return
+    setIsSubmitting(true)
 
-    setSongTitle('')
-    setArtist('')
-    setRequesterName('')
-    setGiftNote('')
-    setNote('')
-    setRequestedAt(toDateTimeLocal(Date.now()))
-    setMessage(`已记录《${normalizedTitle}》。`)
-    await refresh()
+    try {
+      await addLearningRequest({
+        artist: artist.trim() || undefined,
+        giftNote: giftNote.trim() || undefined,
+        note: note.trim() || undefined,
+        requesterName: requesterName.trim() || undefined,
+        requestedAt: fromDateTimeLocal(requestedAt),
+        songTitle: normalizedTitle,
+        status: 'todo',
+      })
+
+      setSongTitle('')
+      setArtist('')
+      setRequesterName('')
+      setGiftNote('')
+      setNote('')
+      setRequestedAt(toDateTimeLocal(Date.now()))
+      setMessage(`已记录《${normalizedTitle}》。`)
+      await refresh()
+    } catch {
+      setMessage('记录失败，请重试。')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   async function handleStatusChange(request: LearningRequest, status: LearningRequestStatus) {
-    await updateLearningRequest(request.id, { status })
-    await refresh()
+    try {
+      await updateLearningRequest(request.id, { status })
+      await refresh()
+    } catch {
+      setMessage('状态更新失败，请重试。')
+    }
   }
 
   async function handleAddToLibrary(request: LearningRequest) {
-    const song = await addSong(defaultSongDraft(request))
-    await linkLearningRequestToSong(request.id, song.id)
-    setMessage(`已把《${song.title}》加入曲库。`)
-    await refresh()
+    try {
+      const song = await addSong(defaultSongDraft(request))
+      await linkLearningRequestToSong(request.id, song.id)
+      setMessage(`已把《${song.title}》加入曲库。`)
+      await refresh()
+    } catch {
+      setMessage('加入曲库失败，请重试。')
+    }
+  }
+
+  async function handleDeleteRequest(id: string) {
+    if (deletingId) return
+    setDeletingId(id)
+    try {
+      await deleteLearningRequest(id)
+      setMessage('已删除学歌记录。')
+      await refresh()
+    } catch {
+      setMessage('删除失败，请重试。')
+    } finally {
+      setDeletingId(null)
+    }
   }
 
   return (
@@ -168,8 +202,13 @@ function LearningMemoPage() {
                 rows={4}
               />
             </label>
-            <button className="primary-button" type="button" onClick={handleAddRequest}>
-              保存记录
+            <button
+              className="primary-button"
+              disabled={isSubmitting}
+              type="button"
+              onClick={handleAddRequest}
+            >
+              {isSubmitting ? '保存中...' : '保存记录'}
             </button>
             {message ? <p className="inline-message">{message}</p> : null}
           </section>
@@ -253,6 +292,14 @@ function LearningMemoPage() {
                       onClick={() => handleAddToLibrary(request)}
                     >
                       {request.linkedSongId ? '已加入曲库' : '加入曲库'}
+                    </button>
+                    <button
+                      className="secondary-button danger"
+                      disabled={deletingId === request.id}
+                      type="button"
+                      onClick={() => handleDeleteRequest(request.id)}
+                    >
+                      {deletingId === request.id ? '删除中...' : '删除'}
                     </button>
                   </div>
                 </article>

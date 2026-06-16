@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { classifySongs } from './classify'
 import type { Song } from '@/types'
+import { classifySongs } from './classify'
 
 function createSong(partial: Partial<Song> = {}): Song {
   return {
@@ -10,8 +10,10 @@ function createSong(partial: Partial<Song> = {}): Song {
     genre: '流行',
     language: '国语',
     mood: '欢快',
-    proficiency: 'intermediate',
+    proficiency: 'familiar',
     status: 'requestable',
+    tags: [],
+    updatedAt: Date.now(),
     createdAt: Date.now(),
     ...partial,
   }
@@ -44,8 +46,8 @@ describe('classifySongs', () => {
     const groups = classifySongs(songs, 'genre')
 
     expect(groups).toHaveLength(2)
-    expect(groups[0].title).toBe('摇滚')
-    expect(groups[1].title).toBe('流行')
+    expect(groups[0].title).toBe('流行')
+    expect(groups[1].title).toBe('摇滚')
   })
 
   it('空歌手归类为"其他歌手"', () => {
@@ -72,8 +74,8 @@ describe('classifySongs', () => {
 
     expect(groups).toHaveLength(4)
     expect(groups.find((g) => g.title === '短歌名')?.songs).toHaveLength(2)
-    expect(groups.find((g) => g.title === '常规歌名')?.songs).toHaveLength(2)
-    expect(groups.find((g) => g.title === '长歌名')?.songs).toHaveLength(1)
+    expect(groups.find((g) => g.title === '常规歌名')?.songs).toHaveLength(1)
+    expect(groups.find((g) => g.title === '长歌名')?.songs).toHaveLength(2)
     expect(groups.find((g) => g.title === '超长歌名')?.songs).toHaveLength(1)
   })
 
@@ -92,6 +94,6 @@ describe('classifySongs', () => {
     const groups = classifySongs(songs, 'genre')
     const titles = groups.map((g) => g.title)
 
-    expect(titles).toEqual(['民谣', '流行', '摇滚'])
+    expect(titles).toEqual(['流行', '民谣', '摇滚'])
   })
 })

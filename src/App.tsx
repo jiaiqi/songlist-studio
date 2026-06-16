@@ -12,7 +12,7 @@ import PlaylistEditorPage from '@/pages/PlaylistEditorPage'
 import SettingsPage from '@/pages/SettingsPage'
 
 function App() {
-  const { addToast, removeToast, toasts } = useToast()
+  const { removeToast, toasts } = useToast()
 
   return (
     <ErrorBoundary>

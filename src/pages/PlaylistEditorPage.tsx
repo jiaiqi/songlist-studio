@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'r
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { getPlaylist, listSongs, publishPlaylist, updatePlaylist } from '@/lib/db'
 import type { BackgroundConfig, Playlist, PlaylistSection, Song } from '@/types'
-import { editorReducer, initialUIState } from './reducer'
+import { editorReducer, initialUIState } from './PlaylistEditorPage/reducer'
 
 function formatStatus(status: Playlist['lifecycleStatus']) {
   if (status === 'published') return '已发布'
@@ -239,9 +239,15 @@ function PlaylistEditorPage() {
       link.href = dataUrl
       link.click()
       await loadPlaylist()
-      dispatch({ type: 'setMessage', payload: `已导出 ${exportSize.width} × ${exportSize.height} PNG（2倍高清）。` })
+      dispatch({
+        type: 'setMessage',
+        payload: `已导出 ${exportSize.width} × ${exportSize.height} PNG（2倍高清）。`,
+      })
     } catch {
-      dispatch({ type: 'setMessage', payload: '导出失败。请确认图片背景地址可访问，或先切换为纯色/渐变背景。' })
+      dispatch({
+        type: 'setMessage',
+        payload: '导出失败。请确认图片背景地址可访问，或先切换为纯色/渐变背景。',
+      })
     } finally {
       dispatch({ type: 'setExporting', payload: false })
     }
@@ -287,7 +293,12 @@ function PlaylistEditorPage() {
     )
   }
 
-  function moveSongToSection(fromSectionId: string, toSectionId: string, songId: string, targetIndex: number) {
+  function moveSongToSection(
+    fromSectionId: string,
+    toSectionId: string,
+    songId: string,
+    targetIndex: number,
+  ) {
     updateSections(
       orderedSections.map((section) => {
         if (section.id === fromSectionId) {
@@ -706,7 +717,12 @@ function PlaylistEditorPage() {
               导出尺寸
               <select
                 value={ui.exportSizeValue}
-                onChange={(event) => dispatch({ type: 'setExportSize', payload: event.target.value as ExportSizeValue })}
+                onChange={(event) =>
+                  dispatch({
+                    type: 'setExportSize',
+                    payload: event.target.value as ExportSizeValue,
+                  })
+                }
               >
                 {exportSizes.map((size) => (
                   <option key={size.value} value={size.value}>
@@ -721,7 +737,8 @@ function PlaylistEditorPage() {
             </div>
             {mightOverflow ? (
               <p className="inline-message" style={{ background: '#fff3cd', color: '#856404' }}>
-                内容可能超出导出区域（预估 {estimatedContentHeight}px / {exportSize.height}px）。建议减少分组或歌曲，或选择更大的尺寸。
+                内容可能超出导出区域（预估 {estimatedContentHeight}px / {exportSize.height}
+                px）。建议减少分组或歌曲，或选择更大的尺寸。
               </p>
             ) : null}
             <button
@@ -786,13 +803,24 @@ function PlaylistEditorPage() {
                     {section.hidden ? '显示' : '隐藏'}
                   </button>
                 </div>
-                <div className="song-edit-list" onDragEnd={handleDragEnd} onDragOver={(event) => { event.preventDefault(); }} onDrop={(event) => handleSongDropOnSection(event, section.id)}>
+                <ul
+                  className="song-edit-list"
+                  onDragEnd={handleDragEnd}
+                  onDragOver={(event) => {
+                    event.preventDefault()
+                  }}
+                  onDrop={(event) => handleSongDropOnSection(event, section.id)}
+                >
                   {section.songIds.map((songId, songIndex) => {
                     const song = songMap.get(songId)
-                    const isDragging = ui.draggingSong?.sectionId === section.id && ui.draggingSong?.songId === songId
-                    const isDragOver = ui.dragOverSong?.sectionId === section.id && ui.dragOverSong?.songId === songId
+                    const isDragging =
+                      ui.draggingSong?.sectionId === section.id &&
+                      ui.draggingSong?.songId === songId
+                    const isDragOver =
+                      ui.dragOverSong?.sectionId === section.id &&
+                      ui.dragOverSong?.songId === songId
                     return (
-                      <div
+                      <li
                         className={`song-edit-row ${isDragging ? 'dragging' : ''} ${isDragOver ? 'drag-over' : ''}`}
                         draggable
                         key={songId}
@@ -830,10 +858,10 @@ function PlaylistEditorPage() {
                             ×
                           </button>
                         </div>
-                      </div>
+                      </li>
                     )
                   })}
-                </div>
+                </ul>
               </article>
             ))}
           </section>
@@ -858,7 +886,9 @@ function PlaylistEditorPage() {
                   目标分组
                   <select
                     value={ui.targetSectionId}
-                    onChange={(event) => dispatch({ type: 'setTargetSectionId', payload: event.target.value })}
+                    onChange={(event) =>
+                      dispatch({ type: 'setTargetSectionId', payload: event.target.value })
+                    }
                   >
                     {orderedSections.map((section) => (
                       <option key={section.id} value={section.id}>
@@ -869,12 +899,15 @@ function PlaylistEditorPage() {
                 </label>
                 <input
                   value={ui.addSongQuery}
-                  onChange={(event) => dispatch({ type: 'setAddSongQuery', payload: event.target.value })}
+                  onChange={(event) =>
+                    dispatch({ type: 'setAddSongQuery', payload: event.target.value })
+                  }
                   placeholder="搜索歌名、歌手、风格"
                 />
                 <div className="selector-meta">
                   <span>
-                    可选 {getFilteredAvailableSongs().length} 首 / 已选 {ui.selectedAddSongIds.size} 首
+                    可选 {getFilteredAvailableSongs().length} 首 / 已选 {ui.selectedAddSongIds.size}{' '}
+                    首
                   </span>
                 </div>
                 <div className="song-select-list compact">
@@ -898,7 +931,7 @@ function PlaylistEditorPage() {
                 </div>
                 <button
                   className="primary-button"
-                  disabled={selectedAddSongIds.size === 0 || !targetSectionId}
+                  disabled={ui.selectedAddSongIds.size === 0 || !ui.targetSectionId}
                   type="button"
                   onClick={handleAddSelectedSongs}
                 >

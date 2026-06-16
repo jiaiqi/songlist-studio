@@ -6,6 +6,7 @@ interface ConfirmDialogProps {
   message: string
   confirmLabel?: string
   cancelLabel?: string
+  confirmDisabled?: boolean
   onConfirm: () => void
   onCancel: () => void
 }
@@ -16,6 +17,7 @@ function ConfirmDialog({
   message,
   confirmLabel = '确认',
   cancelLabel = '取消',
+  confirmDisabled = false,
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
@@ -26,6 +28,20 @@ function ConfirmDialog({
       confirmButtonRef.current?.focus()
     }
   }, [isOpen])
+
+  useEffect(() => {
+    if (!isOpen) return
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        onCancel()
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, onCancel])
 
   if (!isOpen) return null
 
@@ -47,6 +63,7 @@ function ConfirmDialog({
           <button
             ref={confirmButtonRef}
             className="primary-button danger"
+            disabled={confirmDisabled}
             type="button"
             onClick={onConfirm}
           >

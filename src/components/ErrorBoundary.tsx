@@ -39,11 +39,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
             <summary>错误详情</summary>
             <pre>{this.state.error?.message}</pre>
           </details>
-          <button
-            className="primary-button"
-            type="button"
-            onClick={() => window.location.reload()}
-          >
+          <button className="primary-button" type="button" onClick={() => window.location.reload()}>
             刷新页面
           </button>
         </div>

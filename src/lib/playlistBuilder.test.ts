@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { buildPlaylistDraft } from './playlistBuilder'
 import type { Song } from '@/types'
+import { buildPlaylistDraft } from './playlistBuilder'
 
 function createSong(partial: Partial<Song> = {}): Song {
   return {
@@ -10,8 +10,10 @@ function createSong(partial: Partial<Song> = {}): Song {
     genre: '流行',
     language: '国语',
     mood: '欢快',
-    proficiency: 'intermediate',
+    proficiency: 'familiar',
     status: 'requestable',
+    tags: [],
+    updatedAt: Date.now(),
     createdAt: Date.now(),
     ...partial,
   }
@@ -87,10 +89,7 @@ describe('buildPlaylistDraft', () => {
   })
 
   it('每个分组有唯一ID', () => {
-    const songs = [
-      createSong({ id: '1', genre: '流行' }),
-      createSong({ id: '2', genre: '摇滚' }),
-    ]
+    const songs = [createSong({ id: '1', genre: '流行' }), createSong({ id: '2', genre: '摇滚' })]
 
     const draft = buildPlaylistDraft({
       title: '测试',

@@ -1,7 +1,15 @@
 import { type FormEvent, useMemo, useState } from 'react'
 import ConfirmDialog from '@/components/ConfirmDialog'
 import { useSongs } from '@/hooks/useSongs'
-import { addLearningRequest, addSong, addSongs, deleteSong, deleteSongs, seedSampleData, updateSong } from '@/lib/db'
+import {
+  addLearningRequest,
+  addSong,
+  addSongs,
+  deleteSong,
+  deleteSongs,
+  seedSampleData,
+  updateSong,
+} from '@/lib/db'
 import { createSongDraft, parseSongImport } from '@/lib/songImport'
 import type { Song, SongDraft } from '@/types'
 
@@ -30,6 +38,12 @@ function LibraryPage() {
   const [showBatchDeleteConfirm, setShowBatchDeleteConfirm] = useState(false)
   const [showLearningPrompt, setShowLearningPrompt] = useState(false)
   const [lastAddedSong, setLastAddedSong] = useState<Song | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isBulkImporting, setIsBulkImporting] = useState(false)
+  const [isSavingEdit, setIsSavingEdit] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [isBatchDeleting, setIsBatchDeleting] = useState(false)
+  const [isLoadingSample, setIsLoadingSample] = useState(false)
 
   const parsedSongs = useMemo(() => parseSongImport(bulkText), [bulkText])
 
@@ -42,29 +56,41 @@ function LibraryPage() {
       return
     }
 
+    if (isSubmitting) return
+    setIsSubmitting(true)
+
     const duplicate = songs.find(
-      (s) => s.title.toLowerCase() === title.toLowerCase() && s.artist?.toLowerCase() === singleSong.artist?.trim().toLowerCase(),
+      (s) =>
+        s.title.toLowerCase() === title.toLowerCase() &&
+        s.artist?.toLowerCase() === singleSong.artist?.trim().toLowerCase(),
     )
     if (duplicate) {
       setMessage(`《${title}》可能已存在于曲库（歌手：${duplicate.artist || '未填写'}）。`)
+      setIsSubmitting(false)
       return
     }
 
-    const song = await addSong({
-      ...singleSong,
-      title,
-      artist: singleSong.artist?.trim() || undefined,
-      genre: singleSong.genre?.trim() || undefined,
-      language: singleSong.language?.trim() || undefined,
-      mood: singleSong.mood?.trim() || undefined,
-    })
-    setSingleSong(createSongDraft(''))
-    setMessage(`已添加《${title}》。`)
-    if (singleSong.status === 'practicing') {
-      setLastAddedSong(song)
-      setShowLearningPrompt(true)
+    try {
+      const song = await addSong({
+        ...singleSong,
+        title,
+        artist: singleSong.artist?.trim() || undefined,
+        genre: singleSong.genre?.trim() || undefined,
+        language: singleSong.language?.trim() || undefined,
+        mood: singleSong.mood?.trim() || undefined,
+      })
+      setSingleSong(createSongDraft(''))
+      setMessage(`已添加《${title}》。`)
+      if (singleSong.status === 'practicing') {
+        setLastAddedSong(song)
+        setShowLearningPrompt(true)
+      }
+      await refresh()
+    } catch {
+      setMessage('添加歌曲失败，请重试。')
+    } finally {
+      setIsSubmitting(false)
     }
-    await refresh()
   }
 
   async function handleBulkImport() {
@@ -73,19 +99,31 @@ function LibraryPage() {
       return
     }
 
+    if (isBulkImporting) return
+    setIsBulkImporting(true)
+
     const existingTitles = new Set(songs.map((s) => s.title.toLowerCase()))
     const newSongs = parsedSongs.filter((s) => !existingTitles.has(s.title.toLowerCase()))
     const skippedCount = parsedSongs.length - newSongs.length
 
     if (newSongs.length === 0) {
       setMessage(`所有 ${parsedSongs.length} 首歌曲都已存在于曲库，未导入。`)
+      setIsBulkImporting(false)
       return
     }
 
-    await addSongs(newSongs)
-    setBulkText('')
-    setMessage(`已导入 ${newSongs.length} 首新歌曲${skippedCount > 0 ? `，跳过 ${skippedCount} 首重复` : ''}。`)
-    await refresh()
+    try {
+      await addSongs(newSongs)
+      setBulkText('')
+      setMessage(
+        `已导入 ${newSongs.length} 首新歌曲${skippedCount > 0 ? `，跳过 ${skippedCount} 首重复` : ''}。`,
+      )
+      await refresh()
+    } catch {
+      setMessage('批量导入失败，请重试。')
+    } finally {
+      setIsBulkImporting(false)
+    }
   }
 
   function handleStartEdit(song: Song) {
@@ -117,26 +155,43 @@ function LibraryPage() {
       return
     }
 
-    await updateSong(editingSongId, {
-      ...editDraft,
-      title,
-      artist: editDraft.artist?.trim() || undefined,
-      genre: editDraft.genre?.trim() || undefined,
-      language: editDraft.language?.trim() || undefined,
-      mood: editDraft.mood?.trim() || undefined,
-    })
-    setEditingSongId(null)
-    setEditDraft(null)
-    setMessage(`已更新《${title}》。`)
-    await refresh()
+    if (isSavingEdit) return
+    setIsSavingEdit(true)
+
+    try {
+      await updateSong(editingSongId, {
+        ...editDraft,
+        title,
+        artist: editDraft.artist?.trim() || undefined,
+        genre: editDraft.genre?.trim() || undefined,
+        language: editDraft.language?.trim() || undefined,
+        mood: editDraft.mood?.trim() || undefined,
+      })
+      setEditingSongId(null)
+      setEditDraft(null)
+      setMessage(`已更新《${title}》。`)
+      await refresh()
+    } catch {
+      setMessage('更新失败，请重试。')
+    } finally {
+      setIsSavingEdit(false)
+    }
   }
 
   async function handleConfirmDelete() {
     if (!deleteTarget) return
-    await deleteSong(deleteTarget.id)
-    setMessage(`已删除《${deleteTarget.title}》。`)
-    setDeleteTarget(null)
-    await refresh()
+    if (isDeleting) return
+    setIsDeleting(true)
+    try {
+      await deleteSong(deleteTarget.id)
+      setMessage(`已删除《${deleteTarget.title}》。`)
+      setDeleteTarget(null)
+      await refresh()
+    } catch {
+      setMessage('删除失败，请重试。')
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   function toggleSelection(songId: string) {
@@ -159,38 +214,62 @@ function LibraryPage() {
 
   async function handleBatchDelete() {
     if (selectedIds.size === 0) return
-    await deleteSongs(Array.from(selectedIds))
-    setMessage(`已批量删除 ${selectedIds.size} 首歌曲。`)
-    setSelectedIds(new Set())
-    setShowBatchDeleteConfirm(false)
-    await refresh()
+    if (isBatchDeleting) return
+    setIsBatchDeleting(true)
+    try {
+      await deleteSongs(Array.from(selectedIds))
+      setMessage(`已批量删除 ${selectedIds.size} 首歌曲。`)
+      setSelectedIds(new Set())
+      setShowBatchDeleteConfirm(false)
+      await refresh()
+    } catch {
+      setMessage('批量删除失败，请重试。')
+    } finally {
+      setIsBatchDeleting(false)
+    }
   }
 
   async function handleBatchStatusChange(status: Song['status']) {
     if (selectedIds.size === 0) return
-    await Promise.all(Array.from(selectedIds).map((id) => updateSong(id, { status })))
-    setMessage(`已批量更新 ${selectedIds.size} 首歌曲的状态。`)
-    setSelectedIds(new Set())
-    await refresh()
+    try {
+      await Promise.all(Array.from(selectedIds).map((id) => updateSong(id, { status })))
+      setMessage(`已批量更新 ${selectedIds.size} 首歌曲的状态。`)
+      setSelectedIds(new Set())
+      await refresh()
+    } catch {
+      setMessage('批量更新失败，请重试。')
+    }
   }
 
   async function handleAddToLearningMemo() {
     if (!lastAddedSong) return
-    await addLearningRequest({
-      artist: lastAddedSong.artist,
-      requestedAt: Date.now(),
-      songTitle: lastAddedSong.title,
-      status: 'practicing',
-    })
-    setShowLearningPrompt(false)
-    setLastAddedSong(null)
-    setMessage(`已把《${lastAddedSong.title}》加入学歌备忘录。`)
+    try {
+      await addLearningRequest({
+        artist: lastAddedSong.artist,
+        requestedAt: Date.now(),
+        songTitle: lastAddedSong.title,
+        status: 'practicing',
+      })
+      setShowLearningPrompt(false)
+      setLastAddedSong(null)
+      setMessage(`已把《${lastAddedSong.title}》加入学歌备忘录。`)
+    } catch {
+      setMessage('加入学歌备忘录失败，请重试。')
+    }
   }
 
   async function handleLoadSampleData() {
-    const songs = await seedSampleData()
-    setMessage(`已加载 ${songs.length} 首示例歌曲。`)
-    await refresh()
+    if (isLoadingSample) return
+    setIsLoadingSample(true)
+    try {
+      const songs = await seedSampleData()
+      setMessage(`已加载 ${songs.length} 首示例歌曲。`)
+      await refresh()
+    } catch {
+      setMessage('加载示例数据失败，请重试。')
+    } finally {
+      setIsLoadingSample(false)
+    }
   }
 
   return (
@@ -276,8 +355,8 @@ function LibraryPage() {
                 </select>
               </label>
             </div>
-            <button className="primary-button" type="submit">
-              添加到曲库
+            <button className="primary-button" disabled={isSubmitting} type="submit">
+              {isSubmitting ? '添加中...' : '添加到曲库'}
             </button>
           </form>
 
@@ -294,8 +373,13 @@ function LibraryPage() {
             />
             <div className="import-footer">
               <span>将导入 {parsedSongs.length} 首</span>
-              <button className="secondary-button" type="button" onClick={handleBulkImport}>
-                批量导入
+              <button
+                className="secondary-button"
+                disabled={isBulkImporting}
+                type="button"
+                onClick={handleBulkImport}
+              >
+                {isBulkImporting ? '导入中...' : '批量导入'}
               </button>
             </div>
           </section>
@@ -361,7 +445,10 @@ function LibraryPage() {
             <select
               value={filters.proficiency}
               onChange={(event) =>
-                setFilters({ ...filters, proficiency: event.target.value as typeof filters.proficiency })
+                setFilters({
+                  ...filters,
+                  proficiency: event.target.value as typeof filters.proficiency,
+                })
               }
             >
               <option value="all">全部熟练度</option>
@@ -509,10 +596,20 @@ function LibraryPage() {
                       </label>
                     </div>
                     <div className="row-actions">
-                      <button className="primary-button" type="button" onClick={handleSaveEdit}>
-                        保存
+                      <button
+                        className="primary-button"
+                        disabled={isSavingEdit}
+                        type="button"
+                        onClick={handleSaveEdit}
+                      >
+                        {isSavingEdit ? '保存中...' : '保存'}
                       </button>
-                      <button className="secondary-button" type="button" onClick={handleCancelEdit}>
+                      <button
+                        className="secondary-button"
+                        disabled={isSavingEdit}
+                        type="button"
+                        onClick={handleCancelEdit}
+                      >
                         取消
                       </button>
                     </div>
@@ -562,11 +659,12 @@ function LibraryPage() {
                 {songs.length === 0 ? (
                   <button
                     className="secondary-button"
+                    disabled={isLoadingSample}
                     style={{ marginTop: '12px' }}
                     type="button"
                     onClick={handleLoadSampleData}
                   >
-                    加载示例歌曲
+                    {isLoadingSample ? '加载中...' : '加载示例歌曲'}
                   </button>
                 ) : null}
               </div>
@@ -580,6 +678,7 @@ function LibraryPage() {
         title="确认删除"
         message={deleteTarget ? `确定要删除《${deleteTarget.title}》吗？此操作不可撤销。` : ''}
         confirmLabel="删除"
+        confirmDisabled={isDeleting}
         onConfirm={handleConfirmDelete}
         onCancel={() => setDeleteTarget(null)}
       />
@@ -589,6 +688,7 @@ function LibraryPage() {
         title="确认批量删除"
         message={`确定要删除选中的 ${selectedIds.size} 首歌曲吗？此操作不可撤销。`}
         confirmLabel="批量删除"
+        confirmDisabled={isBatchDeleting}
         onConfirm={handleBatchDelete}
         onCancel={() => setShowBatchDeleteConfirm(false)}
       />

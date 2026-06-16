@@ -31,7 +31,10 @@ describe('editorReducer', () => {
   })
 
   it('toggleAddSongs opens and sets default target', () => {
-    const state = editorReducer(initialUIState, { type: 'toggleAddSongs', defaultTargetId: 'sec-1' })
+    const state = editorReducer(initialUIState, {
+      type: 'toggleAddSongs',
+      defaultTargetId: 'sec-1',
+    })
     expect(state.showAddSongs).toBe(true)
     expect(state.targetSectionId).toBe('sec-1')
   })
@@ -49,7 +52,10 @@ describe('editorReducer', () => {
   })
 
   it('toggleAddSongSelection adds song', () => {
-    const state = editorReducer(initialUIState, { type: 'toggleAddSongSelection', songId: 'song-1' })
+    const state = editorReducer(initialUIState, {
+      type: 'toggleAddSongSelection',
+      songId: 'song-1',
+    })
     expect(state.selectedAddSongIds.has('song-1')).toBe(true)
   })
 
@@ -60,7 +66,11 @@ describe('editorReducer', () => {
   })
 
   it('clearAddSongSelections', () => {
-    const prev = { ...initialUIState, selectedAddSongIds: new Set(['song-1']), addSongQuery: 'query' }
+    const prev = {
+      ...initialUIState,
+      selectedAddSongIds: new Set(['song-1']),
+      addSongQuery: 'query',
+    }
     const state = editorReducer(prev, { type: 'clearAddSongSelections' })
     expect(state.selectedAddSongIds.size).toBe(0)
     expect(state.addSongQuery).toBe('')
@@ -97,24 +107,40 @@ describe('editorReducer', () => {
   })
 
   it('dragStartSong', () => {
-    const state = editorReducer(initialUIState, { type: 'dragStartSong', sectionId: 'sec-1', songId: 'song-1' })
+    const state = editorReducer(initialUIState, {
+      type: 'dragStartSong',
+      sectionId: 'sec-1',
+      songId: 'song-1',
+    })
     expect(state.draggingSong).toEqual({ sectionId: 'sec-1', songId: 'song-1' })
   })
 
   it('dragOverSong only when different target', () => {
     const prev = { ...initialUIState, draggingSong: { sectionId: 'sec-1', songId: 'song-1' } }
-    const state = editorReducer(prev, { type: 'dragOverSong', sectionId: 'sec-1', songId: 'song-2' })
+    const state = editorReducer(prev, {
+      type: 'dragOverSong',
+      sectionId: 'sec-1',
+      songId: 'song-2',
+    })
     expect(state.dragOverSong).toEqual({ sectionId: 'sec-1', songId: 'song-2' })
   })
 
   it('dragOverSong ignores same target', () => {
     const prev = { ...initialUIState, draggingSong: { sectionId: 'sec-1', songId: 'song-1' } }
-    const state = editorReducer(prev, { type: 'dragOverSong', sectionId: 'sec-1', songId: 'song-1' })
+    const state = editorReducer(prev, {
+      type: 'dragOverSong',
+      sectionId: 'sec-1',
+      songId: 'song-1',
+    })
     expect(state.dragOverSong).toBeNull()
   })
 
   it('dropSong clears drag state', () => {
-    const prev = { ...initialUIState, draggingSong: { sectionId: 'sec-1', songId: 'song-1' }, dragOverSong: { sectionId: 'sec-2', songId: 'song-2' } }
+    const prev = {
+      ...initialUIState,
+      draggingSong: { sectionId: 'sec-1', songId: 'song-1' },
+      dragOverSong: { sectionId: 'sec-2', songId: 'song-2' },
+    }
     const state = editorReducer(prev, { type: 'dropSong' })
     expect(state.draggingSong).toBeNull()
     expect(state.dragOverSong).toBeNull()

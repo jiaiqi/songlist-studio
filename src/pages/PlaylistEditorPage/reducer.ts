@@ -1,4 +1,4 @@
-import type { ExportSizeValue } from './PlaylistEditorPage'
+type ExportSizeValue = 'story' | 'long' | 'square' | 'poster'
 
 export type EditorUIState = {
   // UI 状态
@@ -79,7 +79,9 @@ export function editorReducer(state: EditorUIState, action: EditorAction): Edito
       return {
         ...state,
         showAddSongs: !state.showAddSongs,
-        targetSectionId: !state.showAddSongs ? (action.defaultTargetId ?? '') : state.targetSectionId,
+        targetSectionId: !state.showAddSongs
+          ? (action.defaultTargetId ?? '')
+          : state.targetSectionId,
       }
     case 'setAddSongQuery':
       return { ...state, addSongQuery: action.payload }
@@ -114,7 +116,8 @@ export function editorReducer(state: EditorUIState, action: EditorAction): Edito
     case 'dragOverSong':
       if (
         state.draggingSong &&
-        (state.draggingSong.sectionId !== action.sectionId || state.draggingSong.songId !== action.songId)
+        (state.draggingSong.sectionId !== action.sectionId ||
+          state.draggingSong.songId !== action.songId)
       ) {
         return { ...state, dragOverSong: { sectionId: action.sectionId, songId: action.songId } }
       }

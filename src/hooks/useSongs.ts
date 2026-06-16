@@ -53,9 +53,17 @@ export function useSongs() {
       const matchesGenre = !genre || song.genre?.toLowerCase().includes(genre)
       const matchesLanguage = !language || song.language?.toLowerCase().includes(language)
       const matchesMood = !mood || song.mood?.toLowerCase().includes(mood)
-      const matchesProficiency = filters.proficiency === 'all' || song.proficiency === filters.proficiency
+      const matchesProficiency =
+        filters.proficiency === 'all' || song.proficiency === filters.proficiency
 
-      return matchesQuery && matchesStatus && matchesGenre && matchesLanguage && matchesMood && matchesProficiency
+      return (
+        matchesQuery &&
+        matchesStatus &&
+        matchesGenre &&
+        matchesLanguage &&
+        matchesMood &&
+        matchesProficiency
+      )
     })
   }, [filters, songs])
 
