@@ -1,100 +1,100 @@
-# AI Tooling Guide
+# AI 工具接入指南
 
-This project is prepared for handoff between AI coding tools such as Codex, Claude Code, OpenCode/OpenClaw-style agents, Cursor, Windsurf, and similar local coding assistants.
+本项目为不同 AI 编程工具之间的接力做了准备，包括 Codex、Claude Code、OpenCode/OpenClaw 系代理、Cursor、Windsurf 以及其他类似的本地编程助手。
 
-## Universal Entrypoints
+## 通用入口文件
 
-Use these files as the handoff surface:
+以下文件作为交接表面使用：
 
-- `AGENTS.md`: universal coding-agent instructions.
-- `CLAUDE.md`: Claude Code specific pointer file.
-- `docs/technical/ai-handoff.md`: detailed current project understanding.
-- `docs/product/project-status-roadmap.md`: completed work, roadmap, and open decisions.
-- `docs/product/songlist-studio-prd.md`: product requirements.
+- `AGENTS.md`：通用编程代理指令。
+- `CLAUDE.md`：Claude Code 专用指针文件。
+- `docs/technical/ai-handoff.md`：当前项目实现的详细说明。
+- `docs/product/project-status-roadmap.md`：已完成工作、路线图、待定决策。
+- `docs/product/songlist-studio-prd.md`：产品需求文档。
 
-## Tool-Specific Notes
+## 工具相关说明
 
 ### Claude Code
 
-Claude Code commonly reads `CLAUDE.md`.
+Claude Code 通常会读取 `CLAUDE.md`。
 
-Expected flow:
+预期流程：
 
-1. Read `CLAUDE.md`.
-2. Follow its pointer to `AGENTS.md`.
-3. Use `docs/technical/ai-handoff.md` for current implementation context.
+1. 阅读 `CLAUDE.md`。
+2. 跟随其指针阅读 `AGENTS.md`。
+3. 通过 `docs/technical/ai-handoff.md` 获取当前实现上下文。
 
-### Codex / OpenAI Coding Agents
+### Codex / OpenAI 系编码代理
 
-Codex-style agents should read `AGENTS.md` first.
+Codex 风格的代理应先阅读 `AGENTS.md`。
 
-Expected flow:
+预期流程：
 
-1. Read `AGENTS.md`.
-2. Check `git status --short`.
-3. Inspect relevant files.
-4. Implement focused changes.
-5. Run `npm run check` and `npm run build`.
-6. Commit with a focused message.
+1. 阅读 `AGENTS.md`。
+2. 执行 `git status --short`。
+3. 检查相关文件。
+4. 实施聚焦的改动。
+5. 运行 `npm run check` 和 `npm run build`。
+6. 用聚焦的 commit message 提交。
 
-### OpenCode / OpenClaw-Style Agents
+### OpenCode / OpenClaw 风格代理
 
-If the tool supports repository instruction files, point it at:
+如果工具支持仓库级指令文件，请指向：
 
 - `AGENTS.md`
 - `docs/technical/ai-handoff.md`
 
-If the tool asks for a project brief, use this:
+如果工具需要项目简介，可使用以下文案：
 
-> SongList Studio is a local-first React/TypeScript/Vite app for livestream hosts to manage songs they can sing, generate categorized playlists, edit and export playlist images, manage playlist history, and track viewer-requested songs to learn.
+> SongList Studio 是一个本地优先的 React/TypeScript/Vite 应用，面向音乐主播，用于管理自己会唱的歌曲、生成分类歌单、编辑并导出歌单图片、管理历史歌单，并记录观众要求学的歌曲。
 
-### Cursor / Windsurf / Other IDE Agents
+### Cursor / Windsurf / 其他 IDE 代理
 
-If the tool does not automatically read `AGENTS.md`, paste or attach:
+如果工具不会自动读取 `AGENTS.md`，请粘贴或附加以下文件：
 
 1. `AGENTS.md`
 2. `docs/technical/ai-handoff.md`
 3. `docs/product/project-status-roadmap.md`
 
-Do not let the agent start from only `README.md`; it is intentionally shorter and does not contain the full implementation context.
+不要让代理只从 `README.md` 入手；它有意写得较短，不包含完整的实现上下文。
 
-## Standard Handoff Prompt
+## 标准交接提示词
 
-Use this prompt when starting another AI tool:
+当启动另一个 AI 工具时使用以下提示词：
 
 ```text
-You are taking over the SongList Studio project at F:\code\songlist-studio.
+你将接管位于 F:\code\songlist-studio 的 SongList Studio 项目。
 
-Before making changes, read:
+在动手之前，请先阅读：
 - AGENTS.md
 - docs/technical/ai-handoff.md
 - docs/product/project-status-roadmap.md
 - docs/product/songlist-studio-prd.md
 
-Then run:
+然后执行：
 - git status --short
 - npm run check
 - npm run build
 
-Follow the existing product direction: simple note-app-inspired tool for livestream hosts, local-first MVP, no music playback, no lyrics, no cloud/account work yet.
+遵循现有的产品方向：面向音乐主播的、备忘录风格的简洁工具，本地优先 MVP，暂不做音乐播放、歌词、云同步或账号体系。
 
-Commit each meaningful change with a focused conventional-style commit message.
+每次有意义的改动都使用聚焦的 conventional 风格 commit message 提交。
 ```
 
-## What To Avoid
+## 注意事项
 
-- Do not add cloud sync, accounts, public sharing, music playback, lyrics, OBS, or live-platform integrations before the local MVP is finished.
-- Do not replace the current UI direction with a marketing landing page.
-- Do not introduce a freeform canvas/poster editor.
-- Do not commit generated build output from `dist/`.
-- Do not mix unrelated features in one commit.
+- 在本地 MVP 完成前，不要引入云同步、账号、公开分享、音乐播放、歌词、OBS 或直播平台对接。
+- 不要把现有 UI 方向替换成营销落地页。
+- 不要引入自由画布 / 海报式编辑器。
+- 不要提交 `dist/` 下的生成产物。
+- 不要把无关功能混在同一次提交里。
 
-## Best Next Task For Any Incoming Agent
+## 任何新代理的最佳下一项工作
 
-Implement first-use onboarding or sample-data import so a new tester can complete the full path quickly:
+实现首次使用引导或示例数据导入，让新测试者能快速完成完整流程：
 
-1. Add sample songs.
-2. Generate a playlist.
-3. Edit playlist sections and songs.
-4. Export PNG.
-5. Confirm it appears in history.
+1. 添加示例歌曲。
+2. 生成一份歌单。
+3. 编辑歌单分组和歌曲。
+4. 导出 PNG。
+5. 确认歌单出现在历史记录中。

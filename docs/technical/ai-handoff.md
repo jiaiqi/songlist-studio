@@ -1,98 +1,100 @@
-# SongList Studio AI Handoff
+# SongList Studio AI 交接文档
 
-## Project Location
+## 项目位置
 
-- Repository: `F:\code\songlist-studio`
-- Stack: React 19, TypeScript, Vite, Dexie, React Router, Biome
-- Package manager: npm
-- Dev URL: `http://127.0.0.1:5173/`
+- 仓库：`F:\code\songlist-studio`
+- 技术栈：React 19、TypeScript、Vite、Dexie、React Router、Biome
+- 包管理器：npm
+- 开发地址：`http://127.0.0.1:5173/`
 
-## Product Summary
+## 产品简介
 
-SongList Studio is a lightweight playlist and song-library tool for music livestream hosts. The product style should stay close to a mobile notes or sticky-notes app: fast, quiet, practical, and not a complex design editor.
+SongList Studio 是一个面向音乐主播的轻量歌单与曲库工具。产品气质应贴近手机备忘录或便签：快、安静、实用，不做成复杂的设计编辑器。
 
-Core user flow:
+核心用户流程：
 
-1. Maintain a library of songs the host can sing.
-2. Generate a playlist by scenario and classification dimension.
-3. Edit the playlist title, rules, sections, song order, visibility, and background.
-4. Publish or save the playlist into history.
-5. Export a mobile-friendly PNG.
-6. Track songs requested by viewers as a learning memo.
+1. 维护一份主播自己会唱的歌曲库。
+2. 根据场景和分类维度生成歌单。
+3. 编辑歌单标题、规则、分组、歌曲顺序、可见性和背景。
+4. 发布或保存歌单到历史。
+5. 导出适合手机的 PNG。
+6. 把观众点歌的请求记录在学歌备忘录里。
 
-## Implemented Features
+## 已实现功能
 
-- React + TypeScript + Vite project scaffold.
-- Local IndexedDB persistence through Dexie.
-- App shell with responsive navigation.
-- Theme switcher with four visual styles:
-  - memo cream
-  - pink note
-  - midnight
-  - kraft paper
-- Song library:
-  - single song add
-  - batch paste import
-  - search and status filtering
-  - local delete
-- Playlist generation:
-  - purpose selection
-  - category dimension selection
-  - draft creation
-  - automatic route into playlist editor
-- Playlist editor:
-  - title, subtitle, rules editing
-  - section rename
-  - section show/hide
-  - section move up/down
-  - song move up/down inside a section
-  - song removal from a playlist
-  - background type/value editing
-  - PNG export
-- Playlist history:
-  - list saved playlists
-  - filter/search
-  - open existing playlist
-  - duplicate as editable draft
-- Learning request memo:
-  - record time, requester, song title, artist, gift/source note, and note
-  - status workflow: todo, practicing, learned, abandoned
-  - add learned/requested song into the song library
-- Mobile layout checks have been performed for 375px width on the main new pages.
-- First-use onboarding with sample-data import: empty-library prompt on Dashboard, fallback entry in Library empty state, automatic playlist draft generation.
+- React + TypeScript + Vite 项目脚手架。
+- 基于 Dexie 的本地 IndexedDB 持久化。
+- 响应式 App 外壳与导航。
+- 主题切换器，提供 4 种视觉风格：
+  - 米白备忘录（memo cream）
+  - 粉色便签（pink note）
+  - 深夜模式（midnight）
+  - 牛皮纸（kraft paper）
+- 曲库：
+  - 单首添加
+  - 批量粘贴导入
+  - 搜索与状态筛选
+  - 本地删除
+- 歌单生成：
+  - 生成目标选择
+  - 分类维度选择
+  - 草稿创建
+  - 自动进入歌单编辑器
+- 歌单编辑器：
+  - 标题、副标题、点歌规则编辑
+  - 分组重命名
+  - 分组显示 / 隐藏
+  - 分组上下移
+  - 组内歌曲上下移
+  - 从歌单移除歌曲
+  - 背景类型 / 值编辑
+  - PNG 导出
+- 发布历史：
+  - 查看已保存歌单
+  - 筛选 / 搜索
+  - 打开现有歌单
+  - 复制为可编辑草稿
+- 学歌备忘录：
+  - 记录时间、点歌人、歌名、歌手、礼物 / 来源说明、备注
+  - 状态流转：待学、练习中、已学会、已放弃
+  - 一键将已学会 / 待学歌曲加入曲库
+- 主要新页面在 375px 宽度下已做移动端布局检查。
+- 首次使用引导与示例数据导入：工作台在曲库为空时显示引导、Library 空态提供回退入口、自动生成歌单草稿。
 
-## Important Source Files
+## 重要源文件
 
-- `AGENTS.md`: universal repository instructions for AI coding agents.
-- `CLAUDE.md`: Claude Code entrypoint that points back to `AGENTS.md`.
-- `src/App.tsx`: route registration.
-- `src/components/AppFrame.tsx`: global shell and navigation.
-- `src/components/ThemeSwitcher.tsx`: theme selector UI.
-- `src/theme/ThemeProvider.tsx`: theme state provider.
-- `src/theme/themes.ts`: theme definitions.
-- `src/lib/db.ts`: Dexie database schema and data operations.
-- `src/lib/classify.ts`: song classification logic.
-- `src/lib/playlistBuilder.ts`: converts selected songs into playlist drafts.
-- `src/pages/LibraryPage.tsx`: song library UI.
-- `src/pages/GeneratePage.tsx`: playlist generation flow.
-- `src/pages/PlaylistEditorPage.tsx`: playlist editing and PNG export.
-- `src/pages/HistoryPage.tsx`: playlist history.
-- `src/pages/LearningMemoPage.tsx`: learning request memo.
-- `src/styles.css`: global layout, themes, page styles, responsive CSS.
+- `AGENTS.md`：面向所有 AI 编程代理的通用仓库指令。
+- `CLAUDE.md`：Claude Code 入口文件，指向 `AGENTS.md`。
+- `src/App.tsx`：路由注册。
+- `src/components/AppFrame.tsx`：全局外壳与导航。
+- `src/components/ThemeSwitcher.tsx`：主题选择器 UI。
+- `src/theme/ThemeProvider.tsx`：主题状态提供者。
+- `src/theme/themes.ts`：主题定义。
+- `src/lib/db.ts`：Dexie 数据库 schema 和数据操作。
+- `src/lib/classify.ts`：歌曲分类逻辑。
+- `src/lib/playlistBuilder.ts`：把选中歌曲转换为歌单草稿。
+- `src/lib/sampleData.ts`：示例歌曲与示例歌单配置。
+- `src/components/OnboardingPanel.tsx`：工作台首次使用引导卡片。
+- `src/pages/LibraryPage.tsx`：曲库 UI。
+- `src/pages/GeneratePage.tsx`：歌单生成流程。
+- `src/pages/PlaylistEditorPage.tsx`：歌单编辑与 PNG 导出。
+- `src/pages/HistoryPage.tsx`：发布历史。
+- `src/pages/LearningMemoPage.tsx`：学歌备忘录。
+- `src/styles.css`：全局布局、主题、页面样式、响应式 CSS。
 
-## Data Model Notes
+## 数据模型说明
 
-The app uses IndexedDB database name `songlist-studio`.
+应用使用 IndexedDB 数据库，名称为 `songlist-studio`。
 
-Tables:
+数据表：
 
 - `songs`
 - `playlists`
 - `learningRequests`
 
-Current Dexie version is `2`.
+当前 Dexie 版本为 `2`。
 
-Key entity types live under `src/types/`:
+关键实体类型位于 `src/types/`：
 
 - `Song`
 - `Playlist`
@@ -100,20 +102,20 @@ Key entity types live under `src/types/`:
 - `BackgroundConfig`
 - `LearningRequest`
 
-## Verification Commands
+## 验证命令
 
-Run these before committing:
+提交前请运行：
 
 ```bash
 npm run check
 npm run build
 ```
 
-Expected current result: both pass.
+预期结果：两者均通过。
 
-## AI Tooling Entrypoints
+## AI 工具入口
 
-For Codex, Claude Code, OpenCode/OpenClaw-style tools, Cursor, Windsurf, or similar agents, start with:
+对 Codex、Claude Code、OpenCode/OpenClaw 系工具、Cursor、Windsurf 或类似代理，建议从以下顺序开始：
 
 1. `AGENTS.md`
 2. `CLAUDE.md`
@@ -122,17 +124,17 @@ For Codex, Claude Code, OpenCode/OpenClaw-style tools, Cursor, Windsurf, or simi
 5. `docs/product/project-status-roadmap.md`
 6. `docs/product/songlist-studio-prd.md`
 
-Use `docs/technical/ai-tooling-guide.md` for a ready-to-paste handoff prompt.
+`docs/technical/ai-tooling-guide.md` 中含可直接粘贴的交接提示词。
 
-## Git Commit Convention Used So Far
+## 已使用的 Git Commit 规范
 
-Use focused commits with conventional-style prefixes:
+使用聚焦的提交，conventional 风格前缀：
 
 - `docs: ...`
 - `chore: ...`
 - `feat: ...`
 
-Recent important commits:
+近期重要提交：
 
 - `a3fe4c6 feat: add playlist PNG export`
 - `ab0ded0 feat: add playlist editor controls`
@@ -140,19 +142,20 @@ Recent important commits:
 - `35e71f8 feat: add playlist history and editor flow`
 - `ecf988a feat: add themed responsive app shell`
 
-## Known Gaps
+## 已知缺口
 
-- PNG export exists, but a real end-to-end download test still needs a user-created playlist.
-- Background image support currently accepts an image URL. Local file upload is not implemented.
-- Export is single-page. Long playlist pagination is not implemented.
-- Playlist editor uses up/down controls, not drag-and-drop.
-- No import/export backup for all local data yet.
-- No automated tests yet beyond TypeScript, Biome, and production build.
+- PNG 导出已实现，但还需要用一份用户自建歌单做端到端下载测试。
+- 背景图片支持当前只接受图片 URL，本地文件上传尚未实现。
+- 导出为单页 PNG，长歌单分页尚未实现。
+- 歌单编辑器使用上下按钮排序，未做拖拽。
+- 尚无全量本地数据导入 / 导出备份。
+- 尚无首次使用引导或示例数据流。
+- 除 TypeScript、Biome、生产构建外，尚无自动化测试。
 
-## Implementation Preferences
+## 实现偏好
 
-- Keep the UI utilitarian and note-app inspired.
-- Do not turn the editor into a freeform poster/canvas design tool.
-- Prefer explicit buttons and form controls that work well on mobile.
-- Keep all product/design/technical docs under `docs/`.
-- Do not introduce account, cloud sync, music playback, lyrics, OBS, or live-platform integrations until the local MVP is complete.
+- 保持 UI 实用、备忘录风格。
+- 不要把编辑器变成自由排版 / 画布式设计工具。
+- 优先使用显式按钮和表单控件，适配移动端。
+- 所有产品 / 设计 / 技术文档放在 `docs/` 下。
+- 在本地 MVP 完成前，不要引入账号、云同步、音乐播放、歌词、OBS 或直播平台对接。
