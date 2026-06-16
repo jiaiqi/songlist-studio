@@ -94,7 +94,8 @@ function LearningMemoPage() {
       setRequestedAt(toDateTimeLocal(Date.now()))
       setMessage(`已记录《${normalizedTitle}》。`)
       await refresh()
-    } catch {
+    } catch (error) {
+      console.error(error)
       setMessage('记录失败，请重试。')
     } finally {
       setIsSubmitting(false)
@@ -105,7 +106,8 @@ function LearningMemoPage() {
     try {
       await updateLearningRequest(request.id, { status })
       await refresh()
-    } catch {
+    } catch (error) {
+      console.error(error)
       setMessage('状态更新失败，请重试。')
     }
   }
@@ -116,7 +118,8 @@ function LearningMemoPage() {
       await linkLearningRequestToSong(request.id, song.id)
       setMessage(`已把《${song.title}》加入曲库。`)
       await refresh()
-    } catch {
+    } catch (error) {
+      console.error(error)
       setMessage('加入曲库失败，请重试。')
     }
   }
@@ -133,7 +136,8 @@ function LearningMemoPage() {
       setMessage('已删除学歌记录。')
       setDeleteTarget(null)
       await refresh()
-    } catch {
+    } catch (error) {
+      console.error(error)
       setMessage('删除失败，请重试。')
     } finally {
       setDeletingId(null)

@@ -143,7 +143,8 @@ function PlaylistEditorPage() {
         })
         dispatch({ type: 'clearUnsaved' })
         dispatch({ type: 'setAutoSaveStatus', payload: 'saved' })
-      } catch {
+      } catch (error) {
+        console.error(error)
         dispatch({ type: 'setAutoSaveStatus', payload: 'idle' })
       }
     }, 3000)
@@ -243,7 +244,8 @@ function PlaylistEditorPage() {
         type: 'setMessage',
         payload: `已导出 ${exportSize.width} × ${exportSize.height} PNG（2倍高清）。`,
       })
-    } catch {
+    } catch (error) {
+      console.error(error)
       dispatch({
         type: 'setMessage',
         payload: '导出失败。请确认图片背景地址可访问，或先切换为纯色/渐变背景。',
@@ -485,7 +487,8 @@ function PlaylistEditorPage() {
         value: dataUrl,
       })
       dispatch({ type: 'setMessage', payload: '图片已加载。' })
-    } catch {
+    } catch (error) {
+      console.error(error)
       dispatch({ type: 'setMessage', payload: '图片读取失败。' })
     }
   }

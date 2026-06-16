@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { listSongs } from '@/lib/db'
 import type { Song } from '@/types'
 import { useDebounce } from './useDebounce'
@@ -25,6 +25,13 @@ export function useSongs() {
   const [songs, setSongs] = useState<Song[]>([])
   const [filters, setFilters] = useState<SongFilters>(initialFilters)
   const [isLoading, setIsLoading] = useState(true)
+  const isMounted = useRef(true)
+
+  useEffect(() => {
+    return () => {
+      isMounted.current = false
+    }
+  }, [])
 
   const debouncedQuery = useDebounce(filters.query, 300)
   const debouncedGenre = useDebounce(filters.genre, 300)
@@ -33,9 +40,18 @@ export function useSongs() {
 
   const refresh = useCallback(async () => {
     setIsLoading(true)
-    const nextSongs = await listSongs()
-    setSongs(nextSongs)
-    setIsLoading(false)
+    try {
+      const nextSongs = await listSongs()
+      if (isMounted.current) {
+        setSongs(nextSongs)
+      }
+    } catch (error) {
+      console.error('Failed to load songs:', error)
+    } finally {
+      if (isMounted.current) {
+        setIsLoading(false)
+      }
+    }
   }, [])
 
   useEffect(() => {

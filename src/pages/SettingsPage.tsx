@@ -31,7 +31,8 @@ function SettingsPage() {
       link.click()
       URL.revokeObjectURL(url)
       setMessage('数据已导出。')
-    } catch {
+    } catch (error) {
+      console.error(error)
       setMessage('导出失败。')
     }
   }
@@ -64,7 +65,8 @@ function SettingsPage() {
       setMessage(
         `数据已恢复：${backup.songs.length} 首歌曲${backup.playlists?.length ? `、${backup.playlists.length} 个歌单` : ''}。`,
       )
-    } catch {
+    } catch (error) {
+      console.error(error)
       setMessage('恢复失败，请检查备份文件格式。')
     } finally {
       event.target.value = ''

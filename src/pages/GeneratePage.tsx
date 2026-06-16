@@ -75,7 +75,8 @@ function GeneratePage() {
 
       setMessage(`已保存草稿《${playlist.title}》，共 ${playlist.sections.length} 个分组。`)
       navigate(`/playlists/${playlist.id}`)
-    } catch {
+    } catch (error) {
+      console.error(error)
       setMessage('保存草稿失败，请重试。')
       setIsSaving(false)
     }

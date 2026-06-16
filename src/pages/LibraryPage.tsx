@@ -92,7 +92,8 @@ function LibraryPage() {
         setShowLearningPrompt(true)
       }
       await refresh()
-    } catch {
+    } catch (error) {
+      console.error(error)
       setMessage('添加歌曲失败，请重试。')
     } finally {
       setIsSubmitting(false)
@@ -125,7 +126,8 @@ function LibraryPage() {
         `已导入 ${newSongs.length} 首新歌曲${skippedCount > 0 ? `，跳过 ${skippedCount} 首重复` : ''}。`,
       )
       await refresh()
-    } catch {
+    } catch (error) {
+      console.error(error)
       setMessage('批量导入失败，请重试。')
     } finally {
       setIsBulkImporting(false)
@@ -177,7 +179,8 @@ function LibraryPage() {
       setEditDraft(null)
       setMessage(`已更新《${title}》。`)
       await refresh()
-    } catch {
+    } catch (error) {
+      console.error(error)
       setMessage('更新失败，请重试。')
     } finally {
       setIsSavingEdit(false)
@@ -193,7 +196,8 @@ function LibraryPage() {
       setMessage(`已删除《${deleteTarget.title}》。`)
       setDeleteTarget(null)
       await refresh()
-    } catch {
+    } catch (error) {
+      console.error(error)
       setMessage('删除失败，请重试。')
     } finally {
       setIsDeleting(false)
@@ -228,7 +232,8 @@ function LibraryPage() {
       setSelectedIds(new Set())
       setShowBatchDeleteConfirm(false)
       await refresh()
-    } catch {
+    } catch (error) {
+      console.error(error)
       setMessage('批量删除失败，请重试。')
     } finally {
       setIsBatchDeleting(false)
@@ -252,7 +257,8 @@ function LibraryPage() {
       setSelectedIds(new Set())
       setBatchStatusTarget(null)
       await refresh()
-    } catch {
+    } catch (error) {
+      console.error(error)
       setMessage('批量更新失败，请重试。')
     } finally {
       setIsBatchUpdating(false)
@@ -271,7 +277,8 @@ function LibraryPage() {
       setShowLearningPrompt(false)
       setLastAddedSong(null)
       setMessage(`已把《${lastAddedSong.title}》加入学歌备忘录。`)
-    } catch {
+    } catch (error) {
+      console.error(error)
       setMessage('加入学歌备忘录失败，请重试。')
     }
   }
@@ -283,7 +290,8 @@ function LibraryPage() {
       const songs = await seedSampleData()
       setMessage(`已加载 ${songs.length} 首示例歌曲。`)
       await refresh()
-    } catch {
+    } catch (error) {
+      console.error(error)
       setMessage('加载示例数据失败，请重试。')
     } finally {
       setIsLoadingSample(false)
