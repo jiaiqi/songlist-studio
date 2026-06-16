@@ -59,6 +59,7 @@ Core user flow:
   - status workflow: todo, practicing, learned, abandoned
   - add learned/requested song into the song library
 - Mobile layout checks have been performed for 375px width on the main new pages.
+- First-use onboarding with sample-data import: empty-library prompt on Dashboard, fallback entry in Library empty state, automatic playlist draft generation.
 
 ## Important Source Files
 
@@ -146,7 +147,6 @@ Recent important commits:
 - Export is single-page. Long playlist pagination is not implemented.
 - Playlist editor uses up/down controls, not drag-and-drop.
 - No import/export backup for all local data yet.
-- No onboarding or sample-data flow yet.
 - No automated tests yet beyond TypeScript, Biome, and production build.
 
 ## Implementation Preferences

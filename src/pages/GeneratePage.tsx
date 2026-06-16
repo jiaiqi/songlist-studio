@@ -73,10 +73,15 @@ function GeneratePage() {
       {songs.length === 0 ? (
         <section className="empty-workflow">
           <h2>曲库还是空的</h2>
-          <p>先录入几首自己会唱的歌，再回来生成歌单。</p>
-          <Link className="primary-link" to="/library">
-            去添加歌曲
-          </Link>
+          <p>先录入几首自己会唱的歌，或者加载示例数据快速体验。</p>
+          <div className="action-row">
+            <Link className="primary-link" to="/library">
+              去添加歌曲
+            </Link>
+            <Link className="primary-link muted" to="/">
+              加载示例数据
+            </Link>
+          </div>
         </section>
       ) : (
         <section className="generator-layout">

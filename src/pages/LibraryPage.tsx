@@ -1,6 +1,6 @@
 import { type FormEvent, useMemo, useState } from 'react'
 import { useSongs } from '@/hooks/useSongs'
-import { addSong, addSongs, deleteSong } from '@/lib/db'
+import { addSong, addSongs, deleteSong, seedSampleData } from '@/lib/db'
 import { createSongDraft, parseSongImport } from '@/lib/songImport'
 import type { Song, SongDraft } from '@/types'
 
@@ -62,6 +62,12 @@ function LibraryPage() {
   async function handleDeleteSong(song: Song) {
     await deleteSong(song.id)
     setMessage(`已删除《${song.title}》。`)
+    await refresh()
+  }
+
+  async function handleLoadSampleData() {
+    const songs = await seedSampleData()
+    setMessage(`已加载 ${songs.length} 首示例歌曲。`)
     await refresh()
   }
 
@@ -223,7 +229,19 @@ function LibraryPage() {
               </article>
             ))}
             {!isLoading && filteredSongs.length === 0 ? (
-              <div className="empty-state">还没有匹配的歌曲。先添加几首，下一步才能生成歌单。</div>
+              <div className="empty-state">
+                <p>还没有匹配的歌曲。先添加几首，下一步才能生成歌单。</p>
+                {songs.length === 0 ? (
+                  <button
+                    className="secondary-button"
+                    style={{ marginTop: '12px' }}
+                    type="button"
+                    onClick={handleLoadSampleData}
+                  >
+                    加载示例歌曲
+                  </button>
+                ) : null}
+              </div>
             ) : null}
           </div>
         </section>

@@ -26,6 +26,7 @@ The project has a working local MVP skeleton with the main product flow partiall
 - Playlist editor page implemented.
 - Learning request memo implemented.
 - PNG export implemented with mobile-friendly size presets.
+- First-use onboarding with sample-data import implemented.
 
 ## Current MVP Flow
 
@@ -47,7 +48,6 @@ Recommended manual test flow:
 
 ### P0 - Finish Core MVP
 
-- Add onboarding or sample-data import so a new user can create the first playlist quickly.
 - Add full local data backup and restore.
 - Add local image upload for playlist backgrounds.
 - Add export validation messages for oversized playlists.

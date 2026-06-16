@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import OnboardingPanel from '@/components/OnboardingPanel'
 import { useDatabaseStats } from '@/hooks/useDatabaseStats'
 
 const nextSteps = [
@@ -47,6 +48,8 @@ function DashboardPage() {
           <strong>IndexedDB</strong>
         </article>
       </section>
+
+      {stats.songCount === 0 && !isLoading ? <OnboardingPanel /> : null}
 
       <section className="workbench">
         <div>

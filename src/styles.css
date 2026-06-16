@@ -940,6 +940,24 @@ button:disabled {
   padding: 16px;
 }
 
+.onboarding-panel {
+  margin-top: 16px;
+}
+
+.onboarding-panel .summary {
+  max-width: 720px;
+}
+
+.onboarding-note {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.empty-state p {
+  margin: 0;
+}
+
 @media (max-width: 900px) {
   .topbar,
   .hero-panel,

@@ -8,6 +8,7 @@ import type {
   SongDraft,
 } from '@/types'
 import { createId } from './id'
+import { sampleSongs } from './sampleData'
 import { now } from './time'
 
 class SongListStudioDatabase extends Dexie {
@@ -76,6 +77,14 @@ export async function deleteSong(id: string) {
 
 export async function listSongs() {
   return db.songs.orderBy('updatedAt').reverse().toArray()
+}
+
+export async function seedSampleData() {
+  return addSongs(sampleSongs)
+}
+
+export async function clearAllData() {
+  await Promise.all([db.songs.clear(), db.playlists.clear(), db.learningRequests.clear()])
 }
 
 export async function addPlaylist(draft: PlaylistDraft) {
