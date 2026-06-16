@@ -8,7 +8,6 @@ const navItems = [
   { label: '生成歌单', to: '/generate' },
   { label: '发布历史', to: '/history' },
   { label: '学歌备忘录', to: '/learning' },
-  { label: '文档', to: '/docs' },
 ]
 
 function AppFrame({ children }: { children: ReactNode }) {
@@ -33,7 +32,12 @@ function AppFrame({ children }: { children: ReactNode }) {
             </NavLink>
           ))}
         </nav>
-        <ThemeSwitcher />
+        <div className="topbar-actions">
+          <NavLink className="nav-item" to="/settings">
+            设置
+          </NavLink>
+          <ThemeSwitcher />
+        </div>
       </header>
       {children}
     </div>

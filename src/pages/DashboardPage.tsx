@@ -1,17 +1,13 @@
 import { Link } from 'react-router-dom'
 import OnboardingPanel from '@/components/OnboardingPanel'
 import { useDatabaseStats } from '@/hooks/useDatabaseStats'
-
-const nextSteps = [
-  '建立我的曲库：单首添加和批量导入',
-  '选择分类维度：歌手、风格、语言、情绪、字数',
-  '生成歌单草稿：调整分组、排序和点歌规则',
-  '发布到历史：保存缩略图、发布时间和复用入口',
-  '记录待学歌曲：把直播间承诺整理成学歌备忘录',
-]
+import { usePlaylists } from '@/hooks/usePlaylists'
 
 function DashboardPage() {
   const { stats, isLoading } = useDatabaseStats()
+  const { playlists } = usePlaylists()
+
+  const recentPlaylists = playlists.slice(0, 3)
 
   return (
     <main className="app-shell">
@@ -53,32 +49,56 @@ function DashboardPage() {
 
       <section className="workbench">
         <div>
-          <p className="section-label">开发顺序</p>
-          <h2>从曲库到歌单，先把主流程跑顺</h2>
+          <p className="section-label">Quick Actions</p>
+          <h2>快速操作</h2>
         </div>
-        <ol className="step-list">
-          {nextSteps.map((step) => (
-            <li key={step}>{step}</li>
-          ))}
-        </ol>
         <div className="action-row">
           <Link className="primary-link" to="/library">
-            进入我的曲库
+            添加歌曲
           </Link>
           <Link className="primary-link muted" to="/generate">
             生成歌单
           </Link>
-          <Link className="primary-link muted" to="/history">
-            查看发布历史
-          </Link>
           <Link className="primary-link muted" to="/learning">
             记待学歌曲
           </Link>
-          <Link className="doc-link" to="/docs">
-            查看项目文档目录规则
+          <Link className="primary-link muted" to="/settings">
+            备份数据
           </Link>
         </div>
       </section>
+
+      {recentPlaylists.length > 0 ? (
+        <section className="workbench">
+          <div>
+            <p className="section-label">Recent</p>
+            <h2>最近的歌单</h2>
+          </div>
+          <div className="record-grid" style={{ marginTop: '12px' }}>
+            {recentPlaylists.map((playlist) => (
+              <article className="record-card" key={playlist.id}>
+                <header>
+                  <span className="status-pill">
+                    {playlist.lifecycleStatus === 'published' ? '已发布' : '草稿'}
+                  </span>
+                  <small>
+                    {playlist.publishedAt
+                      ? new Date(playlist.publishedAt).toLocaleDateString('zh-CN')
+                      : new Date(playlist.updatedAt).toLocaleDateString('zh-CN')}
+                  </small>
+                </header>
+                <h2>{playlist.title}</h2>
+                <p>{playlist.subtitle || '未填写副标题'}</p>
+                <div className="action-row">
+                  <Link className="primary-link" to={`/playlists/${playlist.id}`}>
+                    打开
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
     </main>
   )
 }
