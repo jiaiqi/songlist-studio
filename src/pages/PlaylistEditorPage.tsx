@@ -31,12 +31,13 @@ function getPreviewBackgroundStyle(background: BackgroundConfig): CSSProperties 
   }
 
   if (background.type === 'image') {
+    const opacity = background.opacity ?? 0.82
+    const blur = background.blur ?? 0
     return {
-      backgroundImage: `linear-gradient(rgba(255,255,255,${background.opacity ?? 0.82}), rgba(255,255,255,${
-        background.opacity ?? 0.82
-      })), url("${background.value}")`,
+      backgroundImage: `linear-gradient(rgba(255,255,255,${opacity}), rgba(255,255,255,${opacity})), url("${background.value}")`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
+      filter: blur > 0 ? `blur(${blur}px)` : undefined,
     }
   }
 
@@ -62,6 +63,15 @@ function getDownloadFilename(title: string) {
   return `${safeTitle || 'songlist'}-${date}.png`
 }
 
+function readFileAsDataURL(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
+
 function PlaylistEditorPage() {
   const navigate = useNavigate()
   const { playlistId } = useParams()
@@ -72,6 +82,18 @@ function PlaylistEditorPage() {
   const [isExporting, setIsExporting] = useState(false)
   const [message, setMessage] = useState('')
   const [exportSizeValue, setExportSizeValue] = useState<ExportSizeValue>('story')
+  const [imagePreview, setImagePreview] = useState('')
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+  const [showAddSongs, setShowAddSongs] = useState(false)
+  const [addSongQuery, setAddSongQuery] = useState('')
+  const [selectedAddSongIds, setSelectedAddSongIds] = useState<Set<string>>(new Set())
+  const [targetSectionId, setTargetSectionId] = useState<string>('')
+
+  const [draggingSectionId, setDraggingSectionId] = useState<string | null>(null)
+  const [dragOverSectionId, setDragOverSectionId] = useState<string | null>(null)
+  const [draggingSong, setDraggingSong] = useState<{ sectionId: string; songId: string } | null>(null)
+  const [dragOverSong, setDragOverSong] = useState<{ sectionId: string; songId: string } | null>(null)
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
 
   const songMap = useMemo(() => new Map(songs.map((song) => [song.id, song])), [songs])
   const orderedSections = useMemo(
@@ -85,6 +107,11 @@ function PlaylistEditorPage() {
     0,
   )
 
+  // Estimate if content might overflow export area
+  // Header: ~120px, each section header: ~40px, each song row: ~32px
+  const estimatedContentHeight = 120 + visibleSections.length * 40 + visibleSongCount * 32
+  const mightOverflow = estimatedContentHeight > exportSize.height
+
   const loadPlaylist = useCallback(async () => {
     if (!playlistId) return
     setIsLoading(true)
@@ -92,11 +119,54 @@ function PlaylistEditorPage() {
     setPlaylist(nextPlaylist)
     setSongs(nextSongs)
     setIsLoading(false)
+    setHasUnsavedChanges(false)
   }, [playlistId])
 
   useEffect(() => {
     loadPlaylist()
   }, [loadPlaylist])
+
+  // Warn about unsaved changes
+  useEffect(() => {
+    if (!hasUnsavedChanges) return
+
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault()
+      event.returnValue = ''
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [hasUnsavedChanges])
+
+  // Auto-save after 3 seconds of inactivity
+  useEffect(() => {
+    if (!hasUnsavedChanges || !playlist) return
+
+    setAutoSaveStatus('idle')
+    const timer = setTimeout(async () => {
+      if (!playlist.title.trim()) return
+      setAutoSaveStatus('saving')
+      try {
+        await updatePlaylist(playlist.id, {
+          ...playlist,
+          title: playlist.title.trim(),
+          subtitle: playlist.subtitle?.trim() || undefined,
+          rulesText: playlist.rulesText?.trim() || undefined,
+        })
+        setHasUnsavedChanges(false)
+        setAutoSaveStatus('saved')
+      } catch {
+        setAutoSaveStatus('idle')
+      }
+    }, 3000)
+
+    return () => clearTimeout(timer)
+  }, [hasUnsavedChanges, playlist])
+
+  function markUnsaved() {
+    setHasUnsavedChanges(true)
+  }
 
   async function handleSave() {
     if (!playlist) return
@@ -128,6 +198,20 @@ function PlaylistEditorPage() {
     setMessage('已发布到历史歌单。')
   }
 
+  async function handleSaveAsTemplate() {
+    if (!playlist) return
+    if (!playlist.title.trim()) {
+      setMessage('保存模板前需要填写歌单标题。')
+      return
+    }
+
+    const { saveAsTemplate } = await import('@/lib/db')
+    const template = await saveAsTemplate(playlist.id)
+    if (template) {
+      setMessage(`已保存为模板《${template.title}》。`)
+    }
+  }
+
   async function handleExportPng() {
     if (!playlist || !exportPreviewRef.current) return
     if (!playlist.title.trim()) {
@@ -152,7 +236,7 @@ function PlaylistEditorPage() {
       const dataUrl = await toPng(exportPreviewRef.current, {
         cacheBust: true,
         height: exportSize.height,
-        pixelRatio: 1,
+        pixelRatio: 2,
         style: {
           height: `${exportSize.height}px`,
           maxHeight: 'none',
@@ -168,7 +252,7 @@ function PlaylistEditorPage() {
       link.href = dataUrl
       link.click()
       await loadPlaylist()
-      setMessage(`已导出 ${exportSize.width} × ${exportSize.height} PNG。`)
+      setMessage(`已导出 ${exportSize.width} × ${exportSize.height} PNG（2倍高清）。`)
     } catch {
       setMessage('导出失败。请确认图片背景地址可访问，或先切换为纯色/渐变背景。')
     } finally {
@@ -179,6 +263,7 @@ function PlaylistEditorPage() {
   function updateSections(sections: PlaylistSection[]) {
     if (!playlist) return
     setPlaylist({ ...playlist, sections: normalizeSections(sections) })
+    markUnsaved()
   }
 
   function updateSectionTitle(sectionId: string, title: string) {
@@ -215,6 +300,171 @@ function PlaylistEditorPage() {
     )
   }
 
+  function moveSongToSection(fromSectionId: string, toSectionId: string, songId: string, targetIndex: number) {
+    updateSections(
+      orderedSections.map((section) => {
+        if (section.id === fromSectionId) {
+          return { ...section, songIds: section.songIds.filter((id) => id !== songId) }
+        }
+        if (section.id === toSectionId) {
+          const newSongIds = [...section.songIds]
+          newSongIds.splice(targetIndex, 0, songId)
+          return { ...section, songIds: newSongIds }
+        }
+        return section
+      }),
+    )
+  }
+
+  function handleSectionDragStart(sectionId: string) {
+    setDraggingSectionId(sectionId)
+  }
+
+  function handleSectionDragOver(event: React.DragEvent, sectionId: string) {
+    event.preventDefault()
+    if (draggingSectionId && draggingSectionId !== sectionId) {
+      setDragOverSectionId(sectionId)
+    }
+  }
+
+  function handleSectionDrop(event: React.DragEvent, targetSectionId: string) {
+    event.preventDefault()
+    if (!draggingSectionId || draggingSectionId === targetSectionId) {
+      setDraggingSectionId(null)
+      setDragOverSectionId(null)
+      return
+    }
+
+    const fromIndex = orderedSections.findIndex((s) => s.id === draggingSectionId)
+    const toIndex = orderedSections.findIndex((s) => s.id === targetSectionId)
+    updateSections(moveItem(orderedSections, fromIndex, toIndex))
+    setDraggingSectionId(null)
+    setDragOverSectionId(null)
+  }
+
+  function handleSongDragStart(sectionId: string, songId: string) {
+    setDraggingSong({ sectionId, songId })
+  }
+
+  function handleSongDragOver(event: React.DragEvent, sectionId: string, songId: string) {
+    event.preventDefault()
+    if (draggingSong && (draggingSong.sectionId !== sectionId || draggingSong.songId !== songId)) {
+      setDragOverSong({ sectionId, songId })
+    }
+  }
+
+  function handleSongDrop(event: React.DragEvent, targetSectionId: string, targetSongId: string) {
+    event.preventDefault()
+    if (!draggingSong) {
+      setDragOverSong(null)
+      return
+    }
+
+    const { sectionId: fromSectionId, songId: fromSongId } = draggingSong
+    if (fromSectionId === targetSectionId && fromSongId === targetSongId) {
+      setDraggingSong(null)
+      setDragOverSong(null)
+      return
+    }
+
+    if (fromSectionId === targetSectionId) {
+      // Same section reorder
+      const section = orderedSections.find((s) => s.id === targetSectionId)
+      if (!section) return
+      const fromIndex = section.songIds.indexOf(fromSongId)
+      const toIndex = section.songIds.indexOf(targetSongId)
+      updateSections(
+        orderedSections.map((s) =>
+          s.id === targetSectionId ? { ...s, songIds: moveItem(s.songIds, fromIndex, toIndex) } : s,
+        ),
+      )
+    } else {
+      // Cross-section move
+      const targetSection = orderedSections.find((s) => s.id === targetSectionId)
+      if (!targetSection) return
+      const targetIndex = targetSection.songIds.indexOf(targetSongId)
+      moveSongToSection(fromSectionId, targetSectionId, fromSongId, targetIndex)
+    }
+
+    setDraggingSong(null)
+    setDragOverSong(null)
+  }
+
+  function handleSongDropOnSection(event: React.DragEvent, targetSectionId: string) {
+    event.preventDefault()
+    if (!draggingSong) {
+      setDragOverSong(null)
+      return
+    }
+
+    const { sectionId: fromSectionId, songId: fromSongId } = draggingSong
+    if (fromSectionId === targetSectionId) {
+      setDraggingSong(null)
+      setDragOverSong(null)
+      return
+    }
+
+    // Move to end of target section
+    const targetSection = orderedSections.find((s) => s.id === targetSectionId)
+    if (!targetSection) return
+    moveSongToSection(fromSectionId, targetSectionId, fromSongId, targetSection.songIds.length)
+    setDraggingSong(null)
+    setDragOverSong(null)
+  }
+
+  function handleDragEnd() {
+    setDraggingSectionId(null)
+    setDragOverSectionId(null)
+    setDraggingSong(null)
+    setDragOverSong(null)
+  }
+
+  function getAvailableSongs() {
+    const usedIds = new Set(orderedSections.flatMap((s) => s.songIds))
+    return songs.filter((song) => !usedIds.has(song.id))
+  }
+
+  function getFilteredAvailableSongs() {
+    const available = getAvailableSongs()
+    const query = addSongQuery.trim().toLowerCase()
+    if (!query) return available
+    return available.filter(
+      (song) =>
+        song.title.toLowerCase().includes(query) ||
+        song.artist?.toLowerCase().includes(query) ||
+        song.genre?.toLowerCase().includes(query),
+    )
+  }
+
+  function toggleAddSongSelection(songId: string) {
+    const next = new Set(selectedAddSongIds)
+    if (next.has(songId)) {
+      next.delete(songId)
+    } else {
+      next.add(songId)
+    }
+    setSelectedAddSongIds(next)
+  }
+
+  function addSongsToSection(sectionId: string, songIds: string[]) {
+    if (!songIds.length) return
+    updateSections(
+      orderedSections.map((section) =>
+        section.id === sectionId
+          ? { ...section, songIds: [...section.songIds, ...songIds] }
+          : section,
+      ),
+    )
+  }
+
+  function handleAddSelectedSongs() {
+    if (!targetSectionId || selectedAddSongIds.size === 0) return
+    addSongsToSection(targetSectionId, Array.from(selectedAddSongIds))
+    setSelectedAddSongIds(new Set())
+    setAddSongQuery('')
+    setMessage(`已添加 ${selectedAddSongIds.size} 首歌曲到分组。`)
+  }
+
   function removeSong(sectionId: string, songId: string) {
     updateSections(
       orderedSections.map((section) =>
@@ -231,6 +481,35 @@ function PlaylistEditorPage() {
   function updateBackground(background: BackgroundConfig) {
     if (!playlist) return
     setPlaylist({ ...playlist, background })
+    markUnsaved()
+  }
+
+  async function handleImageUpload(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    if (!file.type.startsWith('image/')) {
+      setMessage('请上传图片文件。')
+      return
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setMessage('图片大小不能超过 5MB。')
+      return
+    }
+
+    try {
+      const dataUrl = await readFileAsDataURL(file)
+      setImagePreview(dataUrl)
+      updateBackground({
+        ...playlist?.background,
+        type: 'image',
+        value: dataUrl,
+      })
+      setMessage('图片已加载。')
+    } catch {
+      setMessage('图片读取失败。')
+    }
   }
 
   if (isLoading) {
@@ -283,14 +562,20 @@ function PlaylistEditorPage() {
               歌单标题
               <input
                 value={playlist.title}
-                onChange={(event) => setPlaylist({ ...playlist, title: event.target.value })}
+                onChange={(event) => {
+                  setPlaylist({ ...playlist, title: event.target.value })
+                  markUnsaved()
+                }}
               />
             </label>
             <label>
               副标题
               <input
                 value={playlist.subtitle ?? ''}
-                onChange={(event) => setPlaylist({ ...playlist, subtitle: event.target.value })}
+                onChange={(event) => {
+                  setPlaylist({ ...playlist, subtitle: event.target.value })
+                  markUnsaved()
+                }}
                 placeholder="例如：今晚 20:00 直播场"
               />
             </label>
@@ -298,7 +583,10 @@ function PlaylistEditorPage() {
               点歌规则
               <textarea
                 value={playlist.rulesText ?? ''}
-                onChange={(event) => setPlaylist({ ...playlist, rulesText: event.target.value })}
+                onChange={(event) => {
+                  setPlaylist({ ...playlist, rulesText: event.target.value })
+                  markUnsaved()
+                }}
                 placeholder="例如：点歌前请先确认歌单状态"
                 rows={5}
               />
@@ -317,8 +605,24 @@ function PlaylistEditorPage() {
               >
                 返回历史
               </button>
+              <button className="secondary-button" type="button" onClick={handleSaveAsTemplate}>
+                存为模板
+              </button>
             </div>
             {message ? <p className="inline-message">{message}</p> : null}
+            {autoSaveStatus === 'saving' ? (
+              <p className="inline-message" style={{ background: 'var(--surface-muted)' }}>
+                自动保存中...
+              </p>
+            ) : autoSaveStatus === 'saved' ? (
+              <p className="inline-message" style={{ background: 'var(--surface-muted)' }}>
+                已自动保存
+              </p>
+            ) : hasUnsavedChanges ? (
+              <p className="inline-message" style={{ background: 'var(--surface-muted)' }}>
+                有未保存的修改
+              </p>
+            ) : null}
           </section>
 
           <section className="tool-panel background-panel">
@@ -337,48 +641,92 @@ function PlaylistEditorPage() {
                     value:
                       event.target.value === 'gradient'
                         ? 'linear-gradient(135deg, #fff7df 0%, #ffd7c2 100%)'
-                        : playlist.background.value,
+                        : event.target.value === 'image'
+                          ? ''
+                          : '#FFFDF7',
                   })
                 }
               >
                 <option value="solid">纯色</option>
                 <option value="gradient">渐变</option>
-                <option value="image">图片地址</option>
+                <option value="image">图片</option>
               </select>
             </label>
-            <label>
-              背景值
-              <input
-                value={playlist.background.value}
-                onChange={(event) =>
-                  updateBackground({ ...playlist.background, value: event.target.value })
-                }
-                placeholder={
-                  playlist.background.type === 'image'
-                    ? 'https://...'
-                    : playlist.background.type === 'gradient'
-                      ? 'linear-gradient(...)'
-                      : '#FFFDF7'
-                }
-              />
-            </label>
+
             {playlist.background.type === 'image' ? (
+              <div className="image-upload">
+                <label>
+                  上传本地图片
+                  <input accept="image/*" type="file" onChange={handleImageUpload} />
+                </label>
+                {imagePreview || playlist.background.value ? (
+                  <img
+                    alt="背景预览"
+                    className="image-upload-preview"
+                    src={imagePreview || playlist.background.value}
+                  />
+                ) : null}
+                <label>
+                  或输入图片地址
+                  <input
+                    value={playlist.background.value}
+                    onChange={(event) =>
+                      updateBackground({ ...playlist.background, value: event.target.value })
+                    }
+                    placeholder="https://..."
+                  />
+                </label>
+              </div>
+            ) : (
               <label>
-                背景压暗
+                背景值
                 <input
-                  max="0.95"
-                  min="0.3"
-                  step="0.05"
-                  type="range"
-                  value={playlist.background.opacity ?? 0.82}
+                  value={playlist.background.value}
                   onChange={(event) =>
-                    updateBackground({
-                      ...playlist.background,
-                      opacity: Number(event.target.value),
-                    })
+                    updateBackground({ ...playlist.background, value: event.target.value })
+                  }
+                  placeholder={
+                    playlist.background.type === 'gradient' ? 'linear-gradient(...)' : '#FFFDF7'
                   }
                 />
               </label>
+            )}
+
+            {playlist.background.type === 'image' ? (
+              <>
+                <label>
+                  背景压暗
+                  <input
+                    max="0.95"
+                    min="0.3"
+                    step="0.05"
+                    type="range"
+                    value={playlist.background.opacity ?? 0.82}
+                    onChange={(event) =>
+                      updateBackground({
+                        ...playlist.background,
+                        opacity: Number(event.target.value),
+                      })
+                    }
+                  />
+                </label>
+                <label>
+                  模糊度
+                  <input
+                    max="10"
+                    min="0"
+                    step="0.5"
+                    type="range"
+                    value={playlist.background.blur ?? 0}
+                    onChange={(event) =>
+                      updateBackground({
+                        ...playlist.background,
+                        blur: Number(event.target.value),
+                      })
+                    }
+                  />
+                </label>
+              </>
             ) : null}
           </section>
 
@@ -404,13 +752,18 @@ function PlaylistEditorPage() {
               <span>{visibleSections.length} 个可见分组</span>
               <span>{visibleSongCount} 首歌曲</span>
             </div>
+            {mightOverflow ? (
+              <p className="inline-message" style={{ background: '#fff3cd', color: '#856404' }}>
+                内容可能超出导出区域（预估 {estimatedContentHeight}px / {exportSize.height}px）。建议减少分组或歌曲，或选择更大的尺寸。
+              </p>
+            ) : null}
             <button
               className="primary-button"
               disabled={isExporting}
               type="button"
               onClick={handleExportPng}
             >
-              {isExporting ? '正在导出' : '导出 PNG'}
+              {isExporting ? '正在导出' : '导出 PNG（2倍高清）'}
             </button>
           </section>
 
@@ -420,7 +773,15 @@ function PlaylistEditorPage() {
               <h2>分组整理</h2>
             </div>
             {orderedSections.map((section, sectionIndex) => (
-              <article className="section-edit-card" key={section.id}>
+              <article
+                className={`section-edit-card ${draggingSectionId === section.id ? 'dragging' : ''} ${dragOverSectionId === section.id ? 'drag-over' : ''}`}
+                draggable
+                key={section.id}
+                onDragEnd={handleDragEnd}
+                onDragOver={(event) => handleSectionDragOver(event, section.id)}
+                onDragStart={() => handleSectionDragStart(section.id)}
+                onDrop={(event) => handleSectionDrop(event, section.id)}
+              >
                 <header>
                   <label>
                     分组名
@@ -458,11 +819,21 @@ function PlaylistEditorPage() {
                     {section.hidden ? '显示' : '隐藏'}
                   </button>
                 </div>
-                <div className="song-edit-list">
+                <div className="song-edit-list" onDragEnd={handleDragEnd} onDragOver={(event) => { event.preventDefault(); }} onDrop={(event) => handleSongDropOnSection(event, section.id)}>
                   {section.songIds.map((songId, songIndex) => {
                     const song = songMap.get(songId)
+                    const isDragging = draggingSong?.sectionId === section.id && draggingSong?.songId === songId
+                    const isDragOver = dragOverSong?.sectionId === section.id && dragOverSong?.songId === songId
                     return (
-                      <div className="song-edit-row" key={songId}>
+                      <div
+                        className={`song-edit-row ${isDragging ? 'dragging' : ''} ${isDragOver ? 'drag-over' : ''}`}
+                        draggable
+                        key={songId}
+                        onDragEnd={handleDragEnd}
+                        onDragOver={(event) => handleSongDragOver(event, section.id, songId)}
+                        onDragStart={() => handleSongDragStart(section.id, songId)}
+                        onDrop={(event) => handleSongDrop(event, section.id, songId)}
+                      >
                         <div>
                           <strong>{song?.title ?? '已从曲库移除的歌曲'}</strong>
                           <span>{song?.artist || '未填写歌手'}</span>
@@ -498,6 +869,79 @@ function PlaylistEditorPage() {
                 </div>
               </article>
             ))}
+          </section>
+
+          <section className="tool-panel add-songs-panel">
+            <div>
+              <p className="section-label">Add Songs</p>
+              <h2>追加歌曲</h2>
+            </div>
+            <button
+              className="secondary-button"
+              type="button"
+              onClick={() => {
+                setShowAddSongs(!showAddSongs)
+                if (!showAddSongs) {
+                  setTargetSectionId(orderedSections[0]?.id ?? '')
+                }
+              }}
+            >
+              {showAddSongs ? '收起' : '展开'}歌曲选择
+            </button>
+            {showAddSongs ? (
+              <>
+                <label>
+                  目标分组
+                  <select
+                    value={targetSectionId}
+                    onChange={(event) => setTargetSectionId(event.target.value)}
+                  >
+                    {orderedSections.map((section) => (
+                      <option key={section.id} value={section.id}>
+                        {section.title} ({section.songIds.length} 首)
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <input
+                  value={addSongQuery}
+                  onChange={(event) => setAddSongQuery(event.target.value)}
+                  placeholder="搜索歌名、歌手、风格"
+                />
+                <div className="selector-meta">
+                  <span>
+                    可选 {getFilteredAvailableSongs().length} 首 / 已选 {selectedAddSongIds.size} 首
+                  </span>
+                </div>
+                <div className="song-select-list compact">
+                  {getFilteredAvailableSongs().map((song) => (
+                    <label className="song-select-row" key={song.id}>
+                      <input
+                        checked={selectedAddSongIds.has(song.id)}
+                        type="checkbox"
+                        onChange={() => toggleAddSongSelection(song.id)}
+                      />
+                      <div className="song-select-info">
+                        <strong>{song.title}</strong>
+                        <span>{song.artist || '未填写歌手'}</span>
+                      </div>
+                      <span className="status-pill">{song.genre || '未分类'}</span>
+                    </label>
+                  ))}
+                  {getFilteredAvailableSongs().length === 0 ? (
+                    <p className="empty-hint">没有可添加的歌曲（曲库为空或已全部加入）</p>
+                  ) : null}
+                </div>
+                <button
+                  className="primary-button"
+                  disabled={selectedAddSongIds.size === 0 || !targetSectionId}
+                  type="button"
+                  onClick={handleAddSelectedSongs}
+                >
+                  添加到分组
+                </button>
+              </>
+            ) : null}
           </section>
         </div>
 
