@@ -62,6 +62,8 @@ Core user flow:
 
 ## Important Source Files
 
+- `AGENTS.md`: universal repository instructions for AI coding agents.
+- `CLAUDE.md`: Claude Code entrypoint that points back to `AGENTS.md`.
 - `src/App.tsx`: route registration.
 - `src/components/AppFrame.tsx`: global shell and navigation.
 - `src/components/ThemeSwitcher.tsx`: theme selector UI.
@@ -107,6 +109,19 @@ npm run build
 ```
 
 Expected current result: both pass.
+
+## AI Tooling Entrypoints
+
+For Codex, Claude Code, OpenCode/OpenClaw-style tools, Cursor, Windsurf, or similar agents, start with:
+
+1. `AGENTS.md`
+2. `CLAUDE.md`
+3. `docs/technical/ai-tooling-guide.md`
+4. `docs/technical/ai-handoff.md`
+5. `docs/product/project-status-roadmap.md`
+6. `docs/product/songlist-studio-prd.md`
+
+Use `docs/technical/ai-tooling-guide.md` for a ready-to-paste handoff prompt.
 
 ## Git Commit Convention Used So Far
 

@@ -42,3 +42,12 @@ npm run build
 
 - `docs/product/songlist-studio-prd.md`
 
+## AI 工具接手
+
+如果使用 Claude Code、Codex、OpenCode/OpenClaw、Cursor、Windsurf 等 AI 编程工具接手本项目，优先读取：
+
+- `AGENTS.md`
+- `CLAUDE.md`
+- `docs/technical/ai-tooling-guide.md`
+- `docs/technical/ai-handoff.md`
+- `docs/product/project-status-roadmap.md`
