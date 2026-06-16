@@ -404,7 +404,8 @@ h2 {
 .primary-link,
 .primary-button,
 .secondary-button,
-.song-row button {
+.song-row button,
+.icon-button {
   min-height: 40px;
   padding: 0 14px;
   border-radius: var(--radius-sm);
@@ -424,6 +425,18 @@ h2 {
   color: var(--text);
 }
 
+.icon-button {
+  min-width: 36px;
+  border: 1px solid var(--border);
+  background: var(--surface-muted);
+  color: var(--text-soft);
+}
+
+.icon-button.danger {
+  border-color: color-mix(in srgb, #b65342 52%, var(--border));
+  color: #b65342;
+}
+
 .library-layout,
 .generator-layout {
   display: grid;
@@ -440,6 +453,12 @@ h2 {
 }
 
 .library-tools {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+}
+
+.editor-controls {
   display: grid;
   align-content: start;
   gap: 16px;
@@ -728,6 +747,85 @@ button:disabled {
   border: 1px dashed var(--border);
   border-radius: var(--radius-sm);
   background: var(--surface-muted);
+}
+
+.export-preview {
+  align-self: start;
+  min-height: 640px;
+  overflow: hidden;
+}
+
+.section-editor {
+  max-height: 880px;
+  overflow: auto;
+}
+
+.section-edit-card,
+.song-edit-row {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.section-edit-card {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+
+.section-edit-card header,
+.section-actions,
+.song-edit-row,
+.song-edit-row > div:last-child {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.section-edit-card header {
+  justify-content: space-between;
+}
+
+.section-edit-card header label {
+  flex: 1;
+}
+
+.section-actions {
+  flex-wrap: wrap;
+}
+
+.song-edit-list {
+  display: grid;
+  gap: 8px;
+}
+
+.song-edit-row {
+  justify-content: space-between;
+  padding: 10px;
+}
+
+.song-edit-row > div:first-child {
+  min-width: 0;
+}
+
+.song-edit-row strong,
+.song-edit-row span {
+  display: block;
+}
+
+.song-edit-row strong {
+  color: var(--text);
+}
+
+.song-edit-row span {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.muted-pill {
+  border-color: var(--border);
+  background: var(--surface-muted);
+  color: var(--text-muted);
 }
 
 .record-card {
