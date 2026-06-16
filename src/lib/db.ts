@@ -205,14 +205,19 @@ export async function linkLearningRequestToSong(requestId: string, songId: strin
 }
 
 export async function getDatabaseStats() {
-  const [songCount, playlistCount, publishedPlaylistCount, learningRequestCount, requestableSongCount] =
-    await Promise.all([
-      db.songs.count(),
-      db.playlists.count(),
-      db.playlists.where('lifecycleStatus').equals('published').count(),
-      db.learningRequests.where('status').anyOf('todo', 'practicing').count(),
-      db.songs.where('status').equals('requestable').count(),
-    ])
+  const [
+    songCount,
+    playlistCount,
+    publishedPlaylistCount,
+    learningRequestCount,
+    requestableSongCount,
+  ] = await Promise.all([
+    db.songs.count(),
+    db.playlists.count(),
+    db.playlists.where('lifecycleStatus').equals('published').count(),
+    db.learningRequests.where('status').anyOf('todo', 'practicing').count(),
+    db.songs.where('status').equals('requestable').count(),
+  ])
 
   return {
     learningRequestCount,

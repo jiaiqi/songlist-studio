@@ -24,7 +24,12 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: (id: string) =
   return (
     <div className={`toast-item ${toast.type}`} role="alert">
       <span>{toast.message}</span>
-      <button className="toast-close" type="button" onClick={() => onRemove(toast.id)}>
+      <button
+        className="toast-close"
+        type="button"
+        aria-label="关闭通知"
+        onClick={() => onRemove(toast.id)}
+      >
         ×
       </button>
     </div>

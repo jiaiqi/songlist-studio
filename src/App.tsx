@@ -1,5 +1,5 @@
-import { Route, Routes, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
+import { Route, Routes, useLocation } from 'react-router-dom'
 import AppFrame from '@/components/AppFrame'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import ScrollToTopButton from '@/components/ScrollToTopButton'
@@ -14,10 +14,10 @@ import PlaylistEditorPage from '@/pages/PlaylistEditorPage'
 import SettingsPage from '@/pages/SettingsPage'
 
 function ScrollToTop() {
-  const { pathname } = useLocation()
+  const location = useLocation()
   useEffect(() => {
     window.scrollTo(0, 0)
-  }, [pathname])
+  }, [location.pathname])
   return null
 }
 
