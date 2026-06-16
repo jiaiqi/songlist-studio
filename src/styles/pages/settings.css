@@ -1,0 +1,36 @@
+.settings-section {
+  display: grid;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.settings-card {
+  display: grid;
+  gap: 14px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--surface-strong) 84%, transparent);
+  box-shadow: var(--shadow-soft);
+}
+
+.settings-card h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: 18px;
+}
+
+.settings-card p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.danger-zone {
+  border-color: color-mix(in srgb, #b65342 30%, var(--border));
+  background: color-mix(in srgb, #b65342 6%, var(--surface-strong));
+}
+
+.danger-zone h3 {
+  color: #b65342;
+}

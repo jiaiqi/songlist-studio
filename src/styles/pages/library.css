@@ -1,0 +1,392 @@
+.library-layout,
+.generator-layout {
+  display: grid;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.library-layout {
+  grid-template-columns: 360px minmax(0, 1fr);
+}
+
+.generator-layout {
+  grid-template-columns: 340px minmax(0, 1fr);
+}
+
+.library-tools {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+}
+
+.editor-controls {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+}
+
+.tool-panel,
+.song-board,
+.playlist-preview {
+  padding: 20px;
+}
+
+.tool-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.import-footer,
+.song-board-header,
+.filter-row,
+.preview-section header {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.song-board-header,
+.filter-row {
+  margin-bottom: 14px;
+}
+
+.filter-row input {
+  flex: 1;
+}
+
+.filter-row select {
+  width: 132px;
+}
+
+.compact-panel {
+  margin-top: 16px;
+}
+
+.song-list,
+.learning-list,
+.preview-sections,
+.record-grid,
+.doc-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.record-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 16px;
+}
+
+.song-row,
+.learning-card,
+.preview-section,
+.doc-grid article {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.song-row {
+  display: grid;
+  grid-template-columns: minmax(150px, 1fr) minmax(220px, 1.2fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+}
+
+.song-row strong,
+.song-row span {
+  display: block;
+}
+
+.song-row strong,
+.preview-section header strong,
+.doc-grid strong {
+  color: var(--text);
+}
+
+.song-row span {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.song-row button {
+  background: var(--surface-muted);
+  color: var(--text-soft);
+}
+
+.song-row .row-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.song-row .row-actions button {
+  min-height: 34px;
+  padding: 0 10px;
+  font-size: 13px;
+}
+
+/* Song Edit Inline */
+.song-row.editing {
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.song-edit-form {
+  display: grid;
+  gap: 10px;
+}
+
+.song-edit-form .field-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* Batch operations */
+.batch-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  background: var(--accent-soft);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border));
+  margin-bottom: 12px;
+}
+
+.batch-bar span {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent-strong);
+  white-space: nowrap;
+}
+
+.batch-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.batch-actions button {
+  font-size: 12px;
+  padding: 6px 12px;
+  min-height: 32px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.select-all-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-muted);
+  cursor: pointer;
+  user-select: none;
+}
+
+.select-all-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.song-row-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.song-row-main input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* Advanced filters */
+.advanced-filters {
+  flex-wrap: wrap;
+}
+
+.advanced-filters input,
+.advanced-filters select {
+  min-width: 120px;
+  flex: 1;
+}
+
+.advanced-filters button {
+  white-space: nowrap;
+}
+
+/* Song selector in GeneratePage */
+.song-selector {
+  max-height: 600px;
+  display: flex;
+  flex-direction: column;
+}
+
+.song-selector .filter-row {
+  margin-bottom: 8px;
+}
+
+.selector-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.selector-meta .hint {
+  color: var(--accent-strong);
+  font-weight: 700;
+}
+
+.song-select-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 400px;
+  padding-right: 4px;
+}
+
+.song-select-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.song-select-row:hover {
+  background: var(--surface-muted);
+}
+
+.song-select-row input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.song-select-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.song-select-info strong {
+  font-size: 14px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.song-select-info span {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.song-select-row .status-pill {
+  font-size: 11px;
+  padding: 2px 8px;
+  min-height: 20px;
+}
+
+/* Add songs panel in editor */
+.add-songs-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.add-songs-panel .song-select-list.compact {
+  max-height: 240px;
+}
+
+.add-songs-panel .empty-hint {
+  font-size: 13px;
+  color: var(--text-muted);
+  padding: 12px;
+  text-align: center;
+}
+
+/* Learning Card */
+.learning-card {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+
+.learning-card header,
+.learning-card dl,
+.learning-card dl div {
+  display: flex;
+  align-items: center;
+}
+
+.learning-card header {
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.learning-card header div {
+  min-width: 0;
+}
+
+.learning-card strong,
+.learning-card span {
+  display: block;
+}
+
+.learning-card strong {
+  color: var(--text);
+  font-size: 18px;
+}
+
+.learning-card span,
+.learning-card p,
+.learning-card dt {
+  color: var(--text-muted);
+}
+
+.learning-card p,
+.learning-card dl {
+  margin: 0;
+}
+
+.learning-card dl {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.learning-card dl div {
+  gap: 6px;
+  padding: 7px 9px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+}
+
+.learning-card dd {
+  margin: 0;
+  color: var(--text);
+  font-weight: 800;
+}
+
+.learning-card .action-row select {
+  width: 128px;
+}

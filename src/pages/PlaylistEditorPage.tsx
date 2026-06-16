@@ -1,9 +1,10 @@
 import { toPng } from 'html-to-image'
 import type { CSSProperties } from 'react'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { getPlaylist, listSongs, publishPlaylist, updatePlaylist } from '@/lib/db'
 import type { BackgroundConfig, Playlist, PlaylistSection, Song } from '@/types'
+import { editorReducer, initialUIState } from './reducer'
 
 function formatStatus(status: Playlist['lifecycleStatus']) {
   if (status === 'published') return '已发布'
@@ -79,28 +80,14 @@ function PlaylistEditorPage() {
   const [playlist, setPlaylist] = useState<Playlist>()
   const [songs, setSongs] = useState<Song[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [isExporting, setIsExporting] = useState(false)
-  const [message, setMessage] = useState('')
-  const [exportSizeValue, setExportSizeValue] = useState<ExportSizeValue>('story')
-  const [imagePreview, setImagePreview] = useState('')
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
-  const [showAddSongs, setShowAddSongs] = useState(false)
-  const [addSongQuery, setAddSongQuery] = useState('')
-  const [selectedAddSongIds, setSelectedAddSongIds] = useState<Set<string>>(new Set())
-  const [targetSectionId, setTargetSectionId] = useState<string>('')
-
-  const [draggingSectionId, setDraggingSectionId] = useState<string | null>(null)
-  const [dragOverSectionId, setDragOverSectionId] = useState<string | null>(null)
-  const [draggingSong, setDraggingSong] = useState<{ sectionId: string; songId: string } | null>(null)
-  const [dragOverSong, setDragOverSong] = useState<{ sectionId: string; songId: string } | null>(null)
-  const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
+  const [ui, dispatch] = useReducer(editorReducer, initialUIState)
 
   const songMap = useMemo(() => new Map(songs.map((song) => [song.id, song])), [songs])
   const orderedSections = useMemo(
     () => normalizeSections(playlist?.sections ?? []),
     [playlist?.sections],
   )
-  const exportSize = getExportSize(exportSizeValue)
+  const exportSize = getExportSize(ui.exportSizeValue)
   const visibleSections = orderedSections.filter((section) => !section.hidden)
   const visibleSongCount = visibleSections.reduce(
     (total, section) => total + section.songIds.length,
@@ -119,7 +106,7 @@ function PlaylistEditorPage() {
     setPlaylist(nextPlaylist)
     setSongs(nextSongs)
     setIsLoading(false)
-    setHasUnsavedChanges(false)
+    dispatch({ type: 'clearUnsaved' })
   }, [playlistId])
 
   useEffect(() => {
@@ -128,7 +115,7 @@ function PlaylistEditorPage() {
 
   // Warn about unsaved changes
   useEffect(() => {
-    if (!hasUnsavedChanges) return
+    if (!ui.hasUnsavedChanges) return
 
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       event.preventDefault()
@@ -137,16 +124,16 @@ function PlaylistEditorPage() {
 
     window.addEventListener('beforeunload', handleBeforeUnload)
     return () => window.removeEventListener('beforeunload', handleBeforeUnload)
-  }, [hasUnsavedChanges])
+  }, [ui.hasUnsavedChanges])
 
   // Auto-save after 3 seconds of inactivity
   useEffect(() => {
-    if (!hasUnsavedChanges || !playlist) return
+    if (!ui.hasUnsavedChanges || !playlist) return
 
-    setAutoSaveStatus('idle')
+    dispatch({ type: 'setAutoSaveStatus', payload: 'idle' })
     const timer = setTimeout(async () => {
       if (!playlist.title.trim()) return
-      setAutoSaveStatus('saving')
+      dispatch({ type: 'setAutoSaveStatus', payload: 'saving' })
       try {
         await updatePlaylist(playlist.id, {
           ...playlist,
@@ -154,24 +141,24 @@ function PlaylistEditorPage() {
           subtitle: playlist.subtitle?.trim() || undefined,
           rulesText: playlist.rulesText?.trim() || undefined,
         })
-        setHasUnsavedChanges(false)
-        setAutoSaveStatus('saved')
+        dispatch({ type: 'clearUnsaved' })
+        dispatch({ type: 'setAutoSaveStatus', payload: 'saved' })
       } catch {
-        setAutoSaveStatus('idle')
+        dispatch({ type: 'setAutoSaveStatus', payload: 'idle' })
       }
     }, 3000)
 
     return () => clearTimeout(timer)
-  }, [hasUnsavedChanges, playlist])
+  }, [ui.hasUnsavedChanges, playlist])
 
   function markUnsaved() {
-    setHasUnsavedChanges(true)
+    dispatch({ type: 'markUnsaved' })
   }
 
   async function handleSave() {
     if (!playlist) return
     if (!playlist.title.trim()) {
-      setMessage('歌单标题不能为空。')
+      dispatch({ type: 'setMessage', payload: '歌单标题不能为空。' })
       return
     }
 
@@ -182,49 +169,49 @@ function PlaylistEditorPage() {
       rulesText: playlist.rulesText?.trim() || undefined,
     })
     await loadPlaylist()
-    setMessage('已保存当前歌单。')
+    dispatch({ type: 'setMessage', payload: '已保存当前歌单。' })
   }
 
   async function handlePublish() {
     if (!playlist) return
     if (!playlist.title.trim()) {
-      setMessage('发布前需要填写歌单标题。')
+      dispatch({ type: 'setMessage', payload: '发布前需要填写歌单标题。' })
       return
     }
 
     await handleSave()
     await publishPlaylist(playlist.id)
     await loadPlaylist()
-    setMessage('已发布到历史歌单。')
+    dispatch({ type: 'setMessage', payload: '已发布到历史歌单。' })
   }
 
   async function handleSaveAsTemplate() {
     if (!playlist) return
     if (!playlist.title.trim()) {
-      setMessage('保存模板前需要填写歌单标题。')
+      dispatch({ type: 'setMessage', payload: '保存模板前需要填写歌单标题。' })
       return
     }
 
     const { saveAsTemplate } = await import('@/lib/db')
     const template = await saveAsTemplate(playlist.id)
     if (template) {
-      setMessage(`已保存为模板《${template.title}》。`)
+      dispatch({ type: 'setMessage', payload: `已保存为模板《${template.title}》。` })
     }
   }
 
   async function handleExportPng() {
     if (!playlist || !exportPreviewRef.current) return
     if (!playlist.title.trim()) {
-      setMessage('导出前需要填写歌单标题。')
+      dispatch({ type: 'setMessage', payload: '导出前需要填写歌单标题。' })
       return
     }
     if (visibleSections.length === 0 || visibleSongCount === 0) {
-      setMessage('导出前至少要保留 1 个可见分组和 1 首歌曲。')
+      dispatch({ type: 'setMessage', payload: '导出前至少要保留 1 个可见分组和 1 首歌曲。' })
       return
     }
 
-    setIsExporting(true)
-    setMessage('正在生成 PNG...')
+    dispatch({ type: 'setExporting', payload: true })
+    dispatch({ type: 'setMessage', payload: '正在生成 PNG...' })
 
     try {
       await updatePlaylist(playlist.id, {
@@ -252,11 +239,11 @@ function PlaylistEditorPage() {
       link.href = dataUrl
       link.click()
       await loadPlaylist()
-      setMessage(`已导出 ${exportSize.width} × ${exportSize.height} PNG（2倍高清）。`)
+      dispatch({ type: 'setMessage', payload: `已导出 ${exportSize.width} × ${exportSize.height} PNG（2倍高清）。` })
     } catch {
-      setMessage('导出失败。请确认图片背景地址可访问，或先切换为纯色/渐变背景。')
+      dispatch({ type: 'setMessage', payload: '导出失败。请确认图片背景地址可访问，或先切换为纯色/渐变背景。' })
     } finally {
-      setIsExporting(false)
+      dispatch({ type: 'setExporting', payload: false })
     }
   }
 
@@ -317,53 +304,46 @@ function PlaylistEditorPage() {
   }
 
   function handleSectionDragStart(sectionId: string) {
-    setDraggingSectionId(sectionId)
+    dispatch({ type: 'dragStartSection', sectionId })
   }
 
   function handleSectionDragOver(event: React.DragEvent, sectionId: string) {
     event.preventDefault()
-    if (draggingSectionId && draggingSectionId !== sectionId) {
-      setDragOverSectionId(sectionId)
-    }
+    dispatch({ type: 'dragOverSection', sectionId })
   }
 
   function handleSectionDrop(event: React.DragEvent, targetSectionId: string) {
     event.preventDefault()
-    if (!draggingSectionId || draggingSectionId === targetSectionId) {
-      setDraggingSectionId(null)
-      setDragOverSectionId(null)
+    if (!ui.draggingSectionId || ui.draggingSectionId === targetSectionId) {
+      dispatch({ type: 'dropSection' })
       return
     }
 
-    const fromIndex = orderedSections.findIndex((s) => s.id === draggingSectionId)
+    const fromIndex = orderedSections.findIndex((s) => s.id === ui.draggingSectionId)
     const toIndex = orderedSections.findIndex((s) => s.id === targetSectionId)
     updateSections(moveItem(orderedSections, fromIndex, toIndex))
-    setDraggingSectionId(null)
-    setDragOverSectionId(null)
+    dispatch({ type: 'dropSection' })
   }
 
   function handleSongDragStart(sectionId: string, songId: string) {
-    setDraggingSong({ sectionId, songId })
+    dispatch({ type: 'dragStartSong', sectionId, songId })
   }
 
   function handleSongDragOver(event: React.DragEvent, sectionId: string, songId: string) {
     event.preventDefault()
-    if (draggingSong && (draggingSong.sectionId !== sectionId || draggingSong.songId !== songId)) {
-      setDragOverSong({ sectionId, songId })
-    }
+    dispatch({ type: 'dragOverSong', sectionId, songId })
   }
 
   function handleSongDrop(event: React.DragEvent, targetSectionId: string, targetSongId: string) {
     event.preventDefault()
-    if (!draggingSong) {
-      setDragOverSong(null)
+    if (!ui.draggingSong) {
+      dispatch({ type: 'dropSong' })
       return
     }
 
-    const { sectionId: fromSectionId, songId: fromSongId } = draggingSong
+    const { sectionId: fromSectionId, songId: fromSongId } = ui.draggingSong
     if (fromSectionId === targetSectionId && fromSongId === targetSongId) {
-      setDraggingSong(null)
-      setDragOverSong(null)
+      dispatch({ type: 'dropSong' })
       return
     }
 
@@ -386,21 +366,19 @@ function PlaylistEditorPage() {
       moveSongToSection(fromSectionId, targetSectionId, fromSongId, targetIndex)
     }
 
-    setDraggingSong(null)
-    setDragOverSong(null)
+    dispatch({ type: 'dropSong' })
   }
 
   function handleSongDropOnSection(event: React.DragEvent, targetSectionId: string) {
     event.preventDefault()
-    if (!draggingSong) {
-      setDragOverSong(null)
+    if (!ui.draggingSong) {
+      dispatch({ type: 'dropSong' })
       return
     }
 
-    const { sectionId: fromSectionId, songId: fromSongId } = draggingSong
+    const { sectionId: fromSectionId, songId: fromSongId } = ui.draggingSong
     if (fromSectionId === targetSectionId) {
-      setDraggingSong(null)
-      setDragOverSong(null)
+      dispatch({ type: 'dropSong' })
       return
     }
 
@@ -408,15 +386,11 @@ function PlaylistEditorPage() {
     const targetSection = orderedSections.find((s) => s.id === targetSectionId)
     if (!targetSection) return
     moveSongToSection(fromSectionId, targetSectionId, fromSongId, targetSection.songIds.length)
-    setDraggingSong(null)
-    setDragOverSong(null)
+    dispatch({ type: 'dropSong' })
   }
 
   function handleDragEnd() {
-    setDraggingSectionId(null)
-    setDragOverSectionId(null)
-    setDraggingSong(null)
-    setDragOverSong(null)
+    dispatch({ type: 'dragEnd' })
   }
 
   function getAvailableSongs() {
@@ -426,7 +400,7 @@ function PlaylistEditorPage() {
 
   function getFilteredAvailableSongs() {
     const available = getAvailableSongs()
-    const query = addSongQuery.trim().toLowerCase()
+    const query = ui.addSongQuery.trim().toLowerCase()
     if (!query) return available
     return available.filter(
       (song) =>
@@ -437,13 +411,7 @@ function PlaylistEditorPage() {
   }
 
   function toggleAddSongSelection(songId: string) {
-    const next = new Set(selectedAddSongIds)
-    if (next.has(songId)) {
-      next.delete(songId)
-    } else {
-      next.add(songId)
-    }
-    setSelectedAddSongIds(next)
+    dispatch({ type: 'toggleAddSongSelection', songId })
   }
 
   function addSongsToSection(sectionId: string, songIds: string[]) {
@@ -458,11 +426,10 @@ function PlaylistEditorPage() {
   }
 
   function handleAddSelectedSongs() {
-    if (!targetSectionId || selectedAddSongIds.size === 0) return
-    addSongsToSection(targetSectionId, Array.from(selectedAddSongIds))
-    setSelectedAddSongIds(new Set())
-    setAddSongQuery('')
-    setMessage(`已添加 ${selectedAddSongIds.size} 首歌曲到分组。`)
+    if (!ui.targetSectionId || ui.selectedAddSongIds.size === 0) return
+    addSongsToSection(ui.targetSectionId, Array.from(ui.selectedAddSongIds))
+    dispatch({ type: 'clearAddSongSelections' })
+    dispatch({ type: 'setMessage', payload: `已添加 ${ui.selectedAddSongIds.size} 首歌曲到分组。` })
   }
 
   function removeSong(sectionId: string, songId: string) {
@@ -489,26 +456,26 @@ function PlaylistEditorPage() {
     if (!file) return
 
     if (!file.type.startsWith('image/')) {
-      setMessage('请上传图片文件。')
+      dispatch({ type: 'setMessage', payload: '请上传图片文件。' })
       return
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      setMessage('图片大小不能超过 5MB。')
+      dispatch({ type: 'setMessage', payload: '图片大小不能超过 5MB。' })
       return
     }
 
     try {
       const dataUrl = await readFileAsDataURL(file)
-      setImagePreview(dataUrl)
+      dispatch({ type: 'setImagePreview', payload: dataUrl })
       updateBackground({
         ...playlist?.background,
         type: 'image',
         value: dataUrl,
       })
-      setMessage('图片已加载。')
+      dispatch({ type: 'setMessage', payload: '图片已加载。' })
     } catch {
-      setMessage('图片读取失败。')
+      dispatch({ type: 'setMessage', payload: '图片读取失败。' })
     }
   }
 
@@ -609,16 +576,16 @@ function PlaylistEditorPage() {
                 存为模板
               </button>
             </div>
-            {message ? <p className="inline-message">{message}</p> : null}
-            {autoSaveStatus === 'saving' ? (
+            {ui.message ? <p className="inline-message">{ui.message}</p> : null}
+            {ui.autoSaveStatus === 'saving' ? (
               <p className="inline-message" style={{ background: 'var(--surface-muted)' }}>
                 自动保存中...
               </p>
-            ) : autoSaveStatus === 'saved' ? (
+            ) : ui.autoSaveStatus === 'saved' ? (
               <p className="inline-message" style={{ background: 'var(--surface-muted)' }}>
                 已自动保存
               </p>
-            ) : hasUnsavedChanges ? (
+            ) : ui.hasUnsavedChanges ? (
               <p className="inline-message" style={{ background: 'var(--surface-muted)' }}>
                 有未保存的修改
               </p>
@@ -659,11 +626,11 @@ function PlaylistEditorPage() {
                   上传本地图片
                   <input accept="image/*" type="file" onChange={handleImageUpload} />
                 </label>
-                {imagePreview || playlist.background.value ? (
+                {ui.imagePreview || playlist.background.value ? (
                   <img
                     alt="背景预览"
                     className="image-upload-preview"
-                    src={imagePreview || playlist.background.value}
+                    src={ui.imagePreview || playlist.background.value}
                   />
                 ) : null}
                 <label>
@@ -738,8 +705,8 @@ function PlaylistEditorPage() {
             <label>
               导出尺寸
               <select
-                value={exportSizeValue}
-                onChange={(event) => setExportSizeValue(event.target.value as ExportSizeValue)}
+                value={ui.exportSizeValue}
+                onChange={(event) => dispatch({ type: 'setExportSize', payload: event.target.value as ExportSizeValue })}
               >
                 {exportSizes.map((size) => (
                   <option key={size.value} value={size.value}>
@@ -759,11 +726,11 @@ function PlaylistEditorPage() {
             ) : null}
             <button
               className="primary-button"
-              disabled={isExporting}
+              disabled={ui.isExporting}
               type="button"
               onClick={handleExportPng}
             >
-              {isExporting ? '正在导出' : '导出 PNG（2倍高清）'}
+              {ui.isExporting ? '正在导出' : '导出 PNG（2倍高清）'}
             </button>
           </section>
 
@@ -774,7 +741,7 @@ function PlaylistEditorPage() {
             </div>
             {orderedSections.map((section, sectionIndex) => (
               <article
-                className={`section-edit-card ${draggingSectionId === section.id ? 'dragging' : ''} ${dragOverSectionId === section.id ? 'drag-over' : ''}`}
+                className={`section-edit-card ${ui.draggingSectionId === section.id ? 'dragging' : ''} ${ui.dragOverSectionId === section.id ? 'drag-over' : ''}`}
                 draggable
                 key={section.id}
                 onDragEnd={handleDragEnd}
@@ -822,8 +789,8 @@ function PlaylistEditorPage() {
                 <div className="song-edit-list" onDragEnd={handleDragEnd} onDragOver={(event) => { event.preventDefault(); }} onDrop={(event) => handleSongDropOnSection(event, section.id)}>
                   {section.songIds.map((songId, songIndex) => {
                     const song = songMap.get(songId)
-                    const isDragging = draggingSong?.sectionId === section.id && draggingSong?.songId === songId
-                    const isDragOver = dragOverSong?.sectionId === section.id && dragOverSong?.songId === songId
+                    const isDragging = ui.draggingSong?.sectionId === section.id && ui.draggingSong?.songId === songId
+                    const isDragOver = ui.dragOverSong?.sectionId === section.id && ui.dragOverSong?.songId === songId
                     return (
                       <div
                         className={`song-edit-row ${isDragging ? 'dragging' : ''} ${isDragOver ? 'drag-over' : ''}`}
@@ -880,21 +847,18 @@ function PlaylistEditorPage() {
               className="secondary-button"
               type="button"
               onClick={() => {
-                setShowAddSongs(!showAddSongs)
-                if (!showAddSongs) {
-                  setTargetSectionId(orderedSections[0]?.id ?? '')
-                }
+                dispatch({ type: 'toggleAddSongs', defaultTargetId: orderedSections[0]?.id ?? '' })
               }}
             >
-              {showAddSongs ? '收起' : '展开'}歌曲选择
+              {ui.showAddSongs ? '收起' : '展开'}歌曲选择
             </button>
-            {showAddSongs ? (
+            {ui.showAddSongs ? (
               <>
                 <label>
                   目标分组
                   <select
-                    value={targetSectionId}
-                    onChange={(event) => setTargetSectionId(event.target.value)}
+                    value={ui.targetSectionId}
+                    onChange={(event) => dispatch({ type: 'setTargetSectionId', payload: event.target.value })}
                   >
                     {orderedSections.map((section) => (
                       <option key={section.id} value={section.id}>
@@ -904,20 +868,20 @@ function PlaylistEditorPage() {
                   </select>
                 </label>
                 <input
-                  value={addSongQuery}
-                  onChange={(event) => setAddSongQuery(event.target.value)}
+                  value={ui.addSongQuery}
+                  onChange={(event) => dispatch({ type: 'setAddSongQuery', payload: event.target.value })}
                   placeholder="搜索歌名、歌手、风格"
                 />
                 <div className="selector-meta">
                   <span>
-                    可选 {getFilteredAvailableSongs().length} 首 / 已选 {selectedAddSongIds.size} 首
+                    可选 {getFilteredAvailableSongs().length} 首 / 已选 {ui.selectedAddSongIds.size} 首
                   </span>
                 </div>
                 <div className="song-select-list compact">
                   {getFilteredAvailableSongs().map((song) => (
                     <label className="song-select-row" key={song.id}>
                       <input
-                        checked={selectedAddSongIds.has(song.id)}
+                        checked={ui.selectedAddSongIds.has(song.id)}
                         type="checkbox"
                         onChange={() => toggleAddSongSelection(song.id)}
                       />

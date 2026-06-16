@@ -1,0 +1,258 @@
+.preview-section {
+  padding: 16px;
+}
+
+.preview-section header {
+  margin-bottom: 10px;
+}
+
+.preview-section header strong {
+  font-size: 18px;
+}
+
+.preview-section ol {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 22px;
+}
+
+.preview-section li span {
+  margin-right: 8px;
+  color: var(--text);
+}
+
+.preview-subtitle,
+.preview-rules {
+  margin: 0 0 12px;
+  color: var(--text-muted);
+  line-height: 1.7;
+}
+
+.preview-rules {
+  padding: 12px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+}
+
+.export-preview {
+  align-self: start;
+  overflow: hidden;
+  width: min(100%, 430px);
+  min-height: 0;
+  justify-self: center;
+}
+
+.section-editor {
+  max-height: 880px;
+  overflow: auto;
+}
+
+.section-edit-card,
+.song-edit-row {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.section-edit-card {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+
+.section-edit-card header,
+.section-actions,
+.song-edit-row,
+.song-edit-row > div:last-child {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.section-edit-card header {
+  justify-content: space-between;
+}
+
+.section-edit-card header label {
+  flex: 1;
+}
+
+.section-actions {
+  flex-wrap: wrap;
+}
+
+.song-edit-list {
+  display: grid;
+  gap: 8px;
+}
+
+.song-edit-row {
+  justify-content: space-between;
+  padding: 10px;
+}
+
+.song-edit-row > div:first-child {
+  min-width: 0;
+}
+
+.song-edit-row strong,
+.song-edit-row span {
+  display: block;
+}
+
+.song-edit-row strong {
+  color: var(--text);
+}
+
+.song-edit-row span {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* Drag and drop styles */
+.section-edit-card {
+  cursor: grab;
+}
+
+.section-edit-card:active {
+  cursor: grabbing;
+}
+
+.section-edit-card.dragging {
+  opacity: 0.5;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.section-edit-card.drag-over {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+.song-edit-row {
+  cursor: grab;
+}
+
+.song-edit-row:active {
+  cursor: grabbing;
+}
+
+.song-edit-row.dragging {
+  opacity: 0.5;
+  background: var(--surface-muted);
+}
+
+.song-edit-row.drag-over {
+  border-top: 2px solid var(--accent);
+}
+
+.export-panel {
+  position: sticky;
+  bottom: 14px;
+}
+
+.export-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.export-meta span {
+  padding: 7px 9px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+/* Export Size Warning */
+.export-warning {
+  padding: 10px 12px;
+  border: 1px solid #d4a017;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, #d4a017 12%, var(--surface-strong));
+  color: #8a6d0b;
+  font-size: 13px;
+}
+
+/* Image Upload */
+.image-upload {
+  display: grid;
+  gap: 10px;
+}
+
+.image-upload input[type="file"] {
+  padding: 8px;
+  font-size: 13px;
+}
+
+.image-upload-preview {
+  max-width: 100%;
+  max-height: 160px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+}
+
+/* Record Card */
+.record-card {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+}
+
+.record-card header,
+.record-card dl,
+.record-card dl div {
+  display: flex;
+  align-items: center;
+}
+
+.record-card header {
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.record-card h2,
+.record-card p,
+.record-card dl {
+  margin: 0;
+}
+
+.record-card h2 {
+  color: var(--text);
+  font-size: 20px;
+}
+
+.record-card p,
+.record-card small,
+.record-card dt {
+  color: var(--text-muted);
+}
+
+.record-card dl {
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.record-card dl div {
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+}
+
+.record-card dd {
+  margin: 0;
+  color: var(--text);
+  font-weight: 800;
+}
+
+.record-card .thumbnail {
+  width: 100%;
+  height: 120px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  background: var(--surface-muted);
+}

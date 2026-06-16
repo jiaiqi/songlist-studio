@@ -1,0 +1,143 @@
+.hero-panel,
+.library-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 184px;
+  gap: 20px;
+  align-items: stretch;
+  padding: 30px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--surface-strong) 92%, transparent),
+      var(--surface)
+    ),
+    var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.generator-hero {
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--surface-strong) 90%, transparent),
+      var(--accent-soft)
+    ),
+    var(--surface);
+}
+
+.status-card,
+.library-count {
+  display: grid;
+  align-content: center;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--surface-strong) 82%, transparent);
+}
+
+.library-count {
+  place-content: center;
+  text-align: center;
+}
+
+.status-card span,
+.status-card small,
+.library-count span,
+.metric-grid span,
+.doc-grid span,
+.import-footer span,
+.song-board-header span,
+.inline-message,
+.preview-section header span,
+.preview-section small {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.status-card strong,
+.library-count strong {
+  margin-top: 8px;
+  color: var(--accent);
+  font-size: 44px;
+  line-height: 1;
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.metric-grid article,
+.workbench,
+.doc-grid article,
+.tool-panel,
+.song-board,
+.playlist-preview,
+.record-card,
+.empty-workflow {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--surface-strong) 84%, transparent);
+  box-shadow: var(--shadow-soft);
+}
+
+.metric-grid article {
+  display: grid;
+  gap: 6px;
+  padding: 18px;
+}
+
+.metric-grid strong {
+  color: var(--text);
+  font-size: 24px;
+}
+
+.workbench {
+  margin-top: 16px;
+  padding: 24px;
+}
+
+.step-list {
+  display: grid;
+  gap: 10px;
+  margin: 20px 0 0;
+  padding-left: 22px;
+}
+
+.step-list li,
+.preview-section li {
+  color: var(--text-soft);
+  line-height: 1.6;
+}
+
+.onboarding-panel {
+  margin-top: 16px;
+}
+
+.onboarding-panel .summary {
+  max-width: 720px;
+}
+
+.onboarding-note {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.doc-grid {
+  margin-top: 22px;
+}
+
+.doc-grid article {
+  display: grid;
+  gap: 4px;
+  padding: 16px;
+}
+
+.doc-grid strong {
+  color: var(--text);
+}

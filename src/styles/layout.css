@@ -1,0 +1,131 @@
+.app-frame {
+  min-height: 100vh;
+  padding: 18px;
+}
+
+.app-shell {
+  width: min(100%, 1180px);
+  margin: 0 auto;
+  padding: 28px 0 46px;
+}
+
+.app-shell.narrow {
+  width: min(100%, 780px);
+}
+
+.topbar {
+  position: sticky;
+  top: 12px;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: minmax(210px, 0.9fr) minmax(320px, 1.4fr) minmax(180px, 0.7fr);
+  gap: 14px;
+  align-items: center;
+  width: min(100%, 1180px);
+  margin: 0 auto;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--surface-strong) 88%, transparent);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(18px);
+}
+
+.brand-lockup {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+}
+
+.brand-lockup strong,
+.brand-lockup span {
+  display: block;
+}
+
+.brand-lockup strong {
+  color: var(--text);
+  font-size: 15px;
+}
+
+.brand-lockup span {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.brand-mark {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: var(--surface-strong);
+  font-weight: 800;
+}
+
+.main-nav {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  min-width: 0;
+}
+
+.nav-item {
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  color: var(--text-soft);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.nav-item:hover,
+.nav-item.active {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.theme-switcher {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.topbar-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.topbar-actions .nav-item {
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  color: var(--text-soft);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.topbar-actions .nav-item:hover,
+.topbar-actions .nav-item.active {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.theme-switcher select {
+  height: 34px;
+  min-width: 0;
+  padding: 0 9px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+}
