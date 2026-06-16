@@ -1,30 +1,30 @@
 # AGENTS.md
 
-This file is the primary instruction entrypoint for AI coding agents working in this repository.
+本文件是 AI 编程代理在本仓库的主要指令入口。
 
-## Project
+## 项目
 
-SongList Studio is a local-first playlist and song-library tool for music livestream hosts.
+SongList Studio 是一个面向音乐主播的、本地优先的歌单与曲库工具。
 
-Repository: `F:\code\songlist-studio`
+仓库路径：`F:\code\songlist-studio`
 
-## Product Direction
+## 产品方向
 
-- Keep the app simple, practical, and note-app inspired.
-- The target user is a livestream host who needs to manage singable songs, generate requestable playlists, track past playlists, and record viewer-requested songs to learn.
-- Do not turn the product into a music player, lyrics app, freeform poster editor, social platform, OBS plugin, or live-platform integration.
-- Prefer clear form controls and mobile-friendly interactions over complex drag/canvas behavior.
+- 保持简洁、实用、备忘录风格的产品气质。
+- 目标用户是音乐主播：需要管理自己会唱的歌曲、生成可点歌的歌单、追踪历史歌单、记录观众要求学的歌曲。
+- 不要把产品做成音乐播放器、歌词应用、自由排版的设计器、社区平台、OBS 插件、直播平台对接。
+- 优先选择清晰的表单控件和适合手机的交互方式，避免复杂的拖拽 / 画布行为。
 
-## Required Reading Before Major Changes
+## 重大改动前必读
 
-Read these files first:
+开始之前先阅读：
 
 1. `docs/product/songlist-studio-prd.md`
 2. `docs/product/project-status-roadmap.md`
 3. `docs/technical/ai-handoff.md`
 4. `docs/technical/ai-tooling-guide.md`
 
-## Tech Stack
+## 技术栈
 
 - React 19
 - TypeScript
@@ -35,48 +35,48 @@ Read these files first:
 - Biome
 - html-to-image
 
-## Commands
+## 命令
 
-Install dependencies:
+安装依赖：
 
 ```bash
 npm install
 ```
 
-Run locally:
+本地启动：
 
 ```bash
 npm run dev
 ```
 
-Check before commit:
+提交前检查：
 
 ```bash
 npm run check
 npm run build
 ```
 
-## Git Rules
+## Git 规则
 
-- Keep commits focused and meaningful.
-- Use conventional-style commit messages, for example:
+- 提交要聚焦、有意义。
+- 使用 conventional 风格 commit message，例如：
   - `feat: add playlist PNG export`
   - `docs: add project handoff and roadmap`
   - `chore: configure React Vite tooling`
-- Do not mix unrelated product, UI, and infrastructure changes in one commit.
-- Do not revert user changes unless explicitly requested.
+- 不要把无关的产品、UI、基础设施改动混在同一次提交里。
+- 除非用户明确要求，不要回退用户已做的改动。
 
-## Documentation Rules
+## 文档规则
 
-All project documentation must stay under `docs/`:
+所有项目文档必须放在 `docs/` 下：
 
-- Product docs: `docs/product/`
-- Design docs: `docs/design/`
-- Technical docs: `docs/technical/`
+- 产品文档：`docs/product/`
+- 设计文档：`docs/design/`
+- 技术文档：`docs/technical/`
 
-When adding substantial features, update handoff/status docs if the project state changes.
+当添加重要功能导致项目状态变化时，记得更新 handoff / status 类文档。
 
-## Current Important Routes
+## 当前主要路由
 
 - `/`
 - `/library`
@@ -86,15 +86,15 @@ When adding substantial features, update handoff/status docs if the project stat
 - `/learning`
 - `/docs`
 
-## Current Known Gaps
+## 当前已知缺口
 
-- Real end-to-end PNG export needs testing with a user-created playlist.
-- Onboarding or sample-data import is not implemented.
-- Local background image upload is not implemented.
-- Full data backup and restore are not implemented.
-- Long playlist pagination is not implemented.
-- Automated tests are not yet added.
+- PNG 导出需要用用户自建歌单做端到端实测。
+- 首次使用引导（onboarding）和示例数据导入尚未实现。
+- 本地背景图片上传尚未实现。
+- 完整的数据备份与恢复尚未实现。
+- 长歌单分页尚未实现。
+- 自动化测试尚未添加。
 
-## Next Recommended Task
+## 建议的下一项工作
 
-Build first-use onboarding or sample-data import so a new user or AI tester can quickly create songs, generate a playlist, edit it, and test PNG export end to end.
+实现首次使用引导或示例数据导入，让新用户或 AI 测试代理能快速完成"录入歌曲 → 生成歌单 → 编辑 → 导出 PNG"的完整流程。
