@@ -5,6 +5,7 @@ type DatabaseStats = Awaited<ReturnType<typeof getDatabaseStats>>
 
 const initialStats: DatabaseStats = {
   learningRequestCount: 0,
+  requestableSongCount: 0,
   songCount: 0,
   playlistCount: 0,
   publishedPlaylistCount: 0,

@@ -1,6 +1,8 @@
-import { Route, Routes } from 'react-router-dom'
+import { Route, Routes, useLocation } from 'react-router-dom'
+import { useEffect } from 'react'
 import AppFrame from '@/components/AppFrame'
 import ErrorBoundary from '@/components/ErrorBoundary'
+import ScrollToTopButton from '@/components/ScrollToTopButton'
 import { ToastContainer, useToast } from '@/components/Toast'
 import DashboardPage from '@/pages/DashboardPage'
 import DocsPage from '@/pages/DocsPage'
@@ -11,12 +13,21 @@ import LibraryPage from '@/pages/LibraryPage'
 import PlaylistEditorPage from '@/pages/PlaylistEditorPage'
 import SettingsPage from '@/pages/SettingsPage'
 
+function ScrollToTop() {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [pathname])
+  return null
+}
+
 function App() {
   const { removeToast, toasts } = useToast()
 
   return (
     <ErrorBoundary>
       <AppFrame>
+        <ScrollToTop />
         <Routes>
           <Route path="/" element={<DashboardPage />} />
           <Route path="/docs" element={<DocsPage />} />
@@ -27,6 +38,7 @@ function App() {
           <Route path="/playlists/:playlistId" element={<PlaylistEditorPage />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Routes>
+        <ScrollToTopButton />
         <ToastContainer toasts={toasts} onRemove={removeToast} />
       </AppFrame>
     </ErrorBoundary>

@@ -1,11 +1,16 @@
 import { Link } from 'react-router-dom'
+import { useState } from 'react'
 import OnboardingPanel from '@/components/OnboardingPanel'
+import { useAutoClearMessage } from '@/hooks/useAutoClearMessage'
 import { useDatabaseStats } from '@/hooks/useDatabaseStats'
 import { usePlaylists } from '@/hooks/usePlaylists'
 
 function DashboardPage() {
   const { stats, isLoading } = useDatabaseStats()
   const { playlists } = usePlaylists()
+  const [message, setMessage] = useState('')
+
+  useAutoClearMessage(message, () => setMessage(''))
 
   const recentPlaylists = playlists.slice(0, 3)
 
@@ -40,8 +45,8 @@ function DashboardPage() {
           <strong>{isLoading ? '...' : stats.learningRequestCount}</strong>
         </article>
         <article>
-          <span>存储方式</span>
-          <strong>IndexedDB</strong>
+          <span>可点歌</span>
+          <strong>{isLoading ? '...' : stats.requestableSongCount}</strong>
         </article>
       </section>
 
@@ -99,6 +104,8 @@ function DashboardPage() {
           </div>
         </section>
       ) : null}
+
+      {message ? <p className="inline-message">{message}</p> : null}
     </main>
   )
 }
