@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import OnboardingPanel from '@/components/OnboardingPanel'
+import { SkeletonCard } from '@/components/Skeleton'
 import { useAutoClearMessage } from '@/hooks/useAutoClearMessage'
 import { useDatabaseStats } from '@/hooks/useDatabaseStats'
 import { usePlaylists } from '@/hooks/usePlaylists'
@@ -25,29 +26,56 @@ function DashboardPage() {
           </p>
         </div>
         <section className="status-card" aria-label="本地数据统计">
-          <span>当前曲库</span>
-          <strong>{isLoading ? '...' : stats.songCount}</strong>
-          <small>首歌曲</small>
+          {isLoading ? (
+            <>
+              <span>当前曲库</span>
+              <div
+                className="skeleton skeleton-text"
+                style={{ width: '40px', height: '32px', margin: '8px 0' }}
+              />
+              <small>首歌曲</small>
+            </>
+          ) : (
+            <>
+              <span>当前曲库</span>
+              <strong>{stats.songCount}</strong>
+              <small>首歌曲</small>
+            </>
+          )}
         </section>
       </section>
 
       <section className="metric-grid" aria-label="项目基础状态">
-        <article>
-          <span>全部歌单</span>
-          <strong>{isLoading ? '...' : stats.playlistCount}</strong>
-        </article>
-        <article>
-          <span>已发布</span>
-          <strong>{isLoading ? '...' : stats.publishedPlaylistCount}</strong>
-        </article>
-        <article>
-          <span>待学事项</span>
-          <strong>{isLoading ? '...' : stats.learningRequestCount}</strong>
-        </article>
-        <article>
-          <span>可点歌</span>
-          <strong>{isLoading ? '...' : stats.requestableSongCount}</strong>
-        </article>
+        {isLoading ? (
+          Array.from({ length: 4 }).map((_, i) => (
+            <article key={`skeleton-${i}`}>
+              <span>加载中</span>
+              <div
+                className="skeleton skeleton-text"
+                style={{ width: '30px', height: '28px', marginTop: '8px' }}
+              />
+            </article>
+          ))
+        ) : (
+          <>
+            <article>
+              <span>全部歌单</span>
+              <strong>{stats.playlistCount}</strong>
+            </article>
+            <article>
+              <span>已发布</span>
+              <strong>{stats.publishedPlaylistCount}</strong>
+            </article>
+            <article>
+              <span>待学事项</span>
+              <strong>{stats.learningRequestCount}</strong>
+            </article>
+            <article>
+              <span>可点歌</span>
+              <strong>{stats.requestableSongCount}</strong>
+            </article>
+          </>
+        )}
       </section>
 
       {stats.songCount === 0 && !isLoading ? <OnboardingPanel /> : null}
@@ -73,7 +101,19 @@ function DashboardPage() {
         </div>
       </section>
 
-      {recentPlaylists.length > 0 ? (
+      {isLoading ? (
+        <section className="workbench">
+          <div>
+            <p className="section-label">Recent</p>
+            <h2>最近的歌单</h2>
+          </div>
+          <div className="record-grid" style={{ marginTop: '12px' }}>
+            {Array.from({ length: 3 }).map((_, i) => (
+              <SkeletonCard key={`skeleton-${i}`} />
+            ))}
+          </div>
+        </section>
+      ) : recentPlaylists.length > 0 ? (
         <section className="workbench">
           <div>
             <p className="section-label">Recent</p>

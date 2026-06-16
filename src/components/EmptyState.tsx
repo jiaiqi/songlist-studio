@@ -10,17 +10,18 @@ interface EmptyStateProps {
 function EmptyState({ title, description, children, variant = 'workflow' }: EmptyStateProps) {
   if (variant === 'inline') {
     return (
-      <div className="empty-state">
-        <p>{title}</p>
+      <div className="empty-state inline">
+        <p className="empty-state-title">{title}</p>
+        {description ? <p className="empty-state-description">{description}</p> : null}
         {children}
       </div>
     )
   }
 
   return (
-    <section className="empty-workflow">
+    <section className="empty-state workflow">
       <h2>{title}</h2>
-      {description ? <p>{description}</p> : null}
+      {description ? <p className="summary compact">{description}</p> : null}
       {children}
     </section>
   )

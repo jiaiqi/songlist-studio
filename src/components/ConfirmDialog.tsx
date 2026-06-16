@@ -7,6 +7,7 @@ interface ConfirmDialogProps {
   confirmLabel?: string
   cancelLabel?: string
   confirmDisabled?: boolean
+  confirmVariant?: 'primary' | 'danger'
   onConfirm: () => void
   onCancel: () => void
 }
@@ -18,6 +19,7 @@ function ConfirmDialog({
   confirmLabel = '确认',
   cancelLabel = '取消',
   confirmDisabled = false,
+  confirmVariant = 'primary',
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
@@ -62,7 +64,7 @@ function ConfirmDialog({
           </button>
           <button
             ref={confirmButtonRef}
-            className="primary-button danger"
+            className={`primary-button ${confirmVariant === 'danger' ? 'danger' : ''}`}
             disabled={confirmDisabled}
             type="button"
             onClick={onConfirm}

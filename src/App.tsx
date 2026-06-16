@@ -21,6 +21,10 @@ function ScrollToTop() {
   return null
 }
 
+function SafeRoute({ children }: { children: React.ReactNode }) {
+  return <ErrorBoundary>{children}</ErrorBoundary>
+}
+
 function App() {
   const { removeToast, toasts } = useToast()
 
@@ -29,14 +33,70 @@ function App() {
       <AppFrame>
         <ScrollToTop />
         <Routes>
-          <Route path="/" element={<DashboardPage />} />
-          <Route path="/docs" element={<DocsPage />} />
-          <Route path="/generate" element={<GeneratePage />} />
-          <Route path="/history" element={<HistoryPage />} />
-          <Route path="/learning" element={<LearningMemoPage />} />
-          <Route path="/library" element={<LibraryPage />} />
-          <Route path="/playlists/:playlistId" element={<PlaylistEditorPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
+          <Route
+            path="/"
+            element={
+              <SafeRoute>
+                <DashboardPage />
+              </SafeRoute>
+            }
+          />
+          <Route
+            path="/docs"
+            element={
+              <SafeRoute>
+                <DocsPage />
+              </SafeRoute>
+            }
+          />
+          <Route
+            path="/generate"
+            element={
+              <SafeRoute>
+                <GeneratePage />
+              </SafeRoute>
+            }
+          />
+          <Route
+            path="/history"
+            element={
+              <SafeRoute>
+                <HistoryPage />
+              </SafeRoute>
+            }
+          />
+          <Route
+            path="/learning"
+            element={
+              <SafeRoute>
+                <LearningMemoPage />
+              </SafeRoute>
+            }
+          />
+          <Route
+            path="/library"
+            element={
+              <SafeRoute>
+                <LibraryPage />
+              </SafeRoute>
+            }
+          />
+          <Route
+            path="/playlists/:playlistId"
+            element={
+              <SafeRoute>
+                <PlaylistEditorPage />
+              </SafeRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <SafeRoute>
+                <SettingsPage />
+              </SafeRoute>
+            }
+          />
         </Routes>
         <ScrollToTopButton />
         <ToastContainer toasts={toasts} onRemove={removeToast} />
