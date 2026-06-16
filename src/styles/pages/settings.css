@@ -27,10 +27,10 @@
 }
 
 .danger-zone {
-  border-color: color-mix(in srgb, #b65342 30%, var(--border));
-  background: color-mix(in srgb, #b65342 6%, var(--surface-strong));
+  border-color: color-mix(in srgb, var(--danger) 30%, var(--border));
+  background: color-mix(in srgb, var(--danger) 6%, var(--surface-strong));
 }
 
 .danger-zone h3 {
-  color: #b65342;
+  color: var(--danger);
 }

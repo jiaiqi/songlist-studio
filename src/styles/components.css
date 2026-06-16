@@ -39,14 +39,14 @@
 }
 
 .icon-button.danger {
-  border-color: color-mix(in srgb, #b65342 52%, var(--border));
-  color: #b65342;
+  border-color: color-mix(in srgb, var(--danger) 52%, var(--border));
+  color: var(--danger);
 }
 
 .primary-button.danger {
-  border-color: #b65342;
-  background: #b65342;
-  color: #fff;
+  border-color: var(--danger);
+  background: var(--danger);
+  color: var(--surface-strong);
 }
 
 .action-row {
@@ -181,14 +181,14 @@
 }
 
 .toast-item.success {
-  border-color: #22c55e;
-  background: #f0fdf4;
-  color: #166534;
+  border-color: var(--success);
+  background: var(--success-soft);
+  color: color-mix(in srgb, var(--success) 60%, var(--text));
 }
 
 .toast-item.error {
   border-color: #ef4444;
-  background: #fef2f2;
+  background: var(--danger-soft);
   color: #991b1b;
 }
 
@@ -254,7 +254,7 @@
 .confirm-dialog-overlay-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: color-mix(in srgb, var(--text) 45%, transparent);
   backdrop-filter: blur(4px);
   cursor: pointer;
 }
