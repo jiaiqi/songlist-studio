@@ -751,8 +751,10 @@ button:disabled {
 
 .export-preview {
   align-self: start;
-  min-height: 640px;
   overflow: hidden;
+  width: min(100%, 430px);
+  min-height: 0;
+  justify-self: center;
 }
 
 .section-editor {
@@ -826,6 +828,26 @@ button:disabled {
   border-color: var(--border);
   background: var(--surface-muted);
   color: var(--text-muted);
+}
+
+.export-panel {
+  position: sticky;
+  bottom: 14px;
+}
+
+.export-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.export-meta span {
+  padding: 7px 9px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 800;
 }
 
 .record-card {

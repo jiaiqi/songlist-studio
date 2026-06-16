@@ -1,5 +1,6 @@
+import { toPng } from 'html-to-image'
 import type { CSSProperties } from 'react'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { getPlaylist, listSongs, publishPlaylist, updatePlaylist } from '@/lib/db'
 import type { BackgroundConfig, Playlist, PlaylistSection, Song } from '@/types'
@@ -42,18 +43,46 @@ function getPreviewBackgroundStyle(background: BackgroundConfig): CSSProperties 
   return { background: background.value }
 }
 
+const exportSizes = [
+  { label: '手机竖图 9:16', value: 'story', width: 1080, height: 1920 },
+  { label: '社交长图', value: 'long', width: 1080, height: 2400 },
+  { label: '方形图 1:1', value: 'square', width: 1080, height: 1080 },
+  { label: '竖版海报 3:4', value: 'poster', width: 1242, height: 1660 },
+] as const
+
+type ExportSizeValue = (typeof exportSizes)[number]['value']
+
+function getExportSize(value: ExportSizeValue) {
+  return exportSizes.find((size) => size.value === value) ?? exportSizes[0]
+}
+
+function getDownloadFilename(title: string) {
+  const safeTitle = title.trim().replace(/[\\/:*?"<>|]/g, '-')
+  const date = new Date().toISOString().slice(0, 10)
+  return `${safeTitle || 'songlist'}-${date}.png`
+}
+
 function PlaylistEditorPage() {
   const navigate = useNavigate()
   const { playlistId } = useParams()
+  const exportPreviewRef = useRef<HTMLElement | null>(null)
   const [playlist, setPlaylist] = useState<Playlist>()
   const [songs, setSongs] = useState<Song[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isExporting, setIsExporting] = useState(false)
   const [message, setMessage] = useState('')
+  const [exportSizeValue, setExportSizeValue] = useState<ExportSizeValue>('story')
 
   const songMap = useMemo(() => new Map(songs.map((song) => [song.id, song])), [songs])
   const orderedSections = useMemo(
     () => normalizeSections(playlist?.sections ?? []),
     [playlist?.sections],
+  )
+  const exportSize = getExportSize(exportSizeValue)
+  const visibleSections = orderedSections.filter((section) => !section.hidden)
+  const visibleSongCount = visibleSections.reduce(
+    (total, section) => total + section.songIds.length,
+    0,
   )
 
   const loadPlaylist = useCallback(async () => {
@@ -97,6 +126,54 @@ function PlaylistEditorPage() {
     await publishPlaylist(playlist.id)
     await loadPlaylist()
     setMessage('已发布到历史歌单。')
+  }
+
+  async function handleExportPng() {
+    if (!playlist || !exportPreviewRef.current) return
+    if (!playlist.title.trim()) {
+      setMessage('导出前需要填写歌单标题。')
+      return
+    }
+    if (visibleSections.length === 0 || visibleSongCount === 0) {
+      setMessage('导出前至少要保留 1 个可见分组和 1 首歌曲。')
+      return
+    }
+
+    setIsExporting(true)
+    setMessage('正在生成 PNG...')
+
+    try {
+      await updatePlaylist(playlist.id, {
+        ...playlist,
+        lastExportedAt: Date.now(),
+        title: playlist.title.trim(),
+      })
+
+      const dataUrl = await toPng(exportPreviewRef.current, {
+        cacheBust: true,
+        height: exportSize.height,
+        pixelRatio: 1,
+        style: {
+          height: `${exportSize.height}px`,
+          maxHeight: 'none',
+          maxWidth: 'none',
+          minHeight: `${exportSize.height}px`,
+          width: `${exportSize.width}px`,
+        },
+        width: exportSize.width,
+      })
+
+      const link = document.createElement('a')
+      link.download = getDownloadFilename(playlist.title)
+      link.href = dataUrl
+      link.click()
+      await loadPlaylist()
+      setMessage(`已导出 ${exportSize.width} × ${exportSize.height} PNG。`)
+    } catch {
+      setMessage('导出失败。请确认图片背景地址可访问，或先切换为纯色/渐变背景。')
+    } finally {
+      setIsExporting(false)
+    }
   }
 
   function updateSections(sections: PlaylistSection[]) {
@@ -305,6 +382,38 @@ function PlaylistEditorPage() {
             ) : null}
           </section>
 
+          <section className="tool-panel export-panel">
+            <div>
+              <p className="section-label">Export</p>
+              <h2>导出图片</h2>
+            </div>
+            <label>
+              导出尺寸
+              <select
+                value={exportSizeValue}
+                onChange={(event) => setExportSizeValue(event.target.value as ExportSizeValue)}
+              >
+                {exportSizes.map((size) => (
+                  <option key={size.value} value={size.value}>
+                    {size.label} · {size.width}×{size.height}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <div className="export-meta">
+              <span>{visibleSections.length} 个可见分组</span>
+              <span>{visibleSongCount} 首歌曲</span>
+            </div>
+            <button
+              className="primary-button"
+              disabled={isExporting}
+              type="button"
+              onClick={handleExportPng}
+            >
+              {isExporting ? '正在导出' : '导出 PNG'}
+            </button>
+          </section>
+
           <section className="tool-panel section-editor">
             <div>
               <p className="section-label">Sections</p>
@@ -395,39 +504,43 @@ function PlaylistEditorPage() {
         <section
           className="playlist-preview export-preview"
           aria-label="歌单发布预览"
-          style={getPreviewBackgroundStyle(playlist.background)}
+          ref={exportPreviewRef}
+          style={{
+            ...getPreviewBackgroundStyle(playlist.background),
+            aspectRatio: `${exportSize.width} / ${exportSize.height}`,
+          }}
         >
           <div className="song-board-header">
             <div>
               <p className="section-label">Preview</p>
               <h2>{playlist.title}</h2>
             </div>
-            <span>{orderedSections.filter((section) => !section.hidden).length} 个可见分组</span>
+            <span>
+              {exportSize.width} × {exportSize.height}
+            </span>
           </div>
           <p className="preview-subtitle">{playlist.subtitle || '未填写副标题'}</p>
           <div className="preview-rules">{playlist.rulesText || '未填写点歌规则'}</div>
           <div className="preview-sections">
-            {orderedSections
-              .filter((section) => !section.hidden)
-              .map((section) => (
-                <article className="preview-section" key={section.id}>
-                  <header>
-                    <strong>{section.title}</strong>
-                    <span>{section.songIds.length} 首</span>
-                  </header>
-                  <ol>
-                    {section.songIds.map((songId) => {
-                      const song = songMap.get(songId)
-                      return (
-                        <li key={songId}>
-                          <span>{song?.title ?? '已从曲库移除的歌曲'}</span>
-                          <small>{song?.artist || '未填写歌手'}</small>
-                        </li>
-                      )
-                    })}
-                  </ol>
-                </article>
-              ))}
+            {visibleSections.map((section) => (
+              <article className="preview-section" key={section.id}>
+                <header>
+                  <strong>{section.title}</strong>
+                  <span>{section.songIds.length} 首</span>
+                </header>
+                <ol>
+                  {section.songIds.map((songId) => {
+                    const song = songMap.get(songId)
+                    return (
+                      <li key={songId}>
+                        <span>{song?.title ?? '已从曲库移除的歌曲'}</span>
+                        <small>{song?.artist || '未填写歌手'}</small>
+                      </li>
+                    )
+                  })}
+                </ol>
+              </article>
+            ))}
           </div>
         </section>
       </section>
