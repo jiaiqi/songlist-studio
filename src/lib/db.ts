@@ -75,6 +75,10 @@ export async function deleteSong(id: string) {
   await db.songs.delete(id)
 }
 
+export async function deleteSongs(ids: string[]) {
+  await db.songs.bulkDelete(ids)
+}
+
 export async function listSongs() {
   return db.songs.orderBy('updatedAt').reverse().toArray()
 }
@@ -142,6 +146,21 @@ export async function duplicatePlaylist(id: string) {
     ...source,
     title: `${source.title} 副本`,
     lifecycleStatus: 'draft',
+    publishedAt: undefined,
+    lastExportedAt: undefined,
+    sourcePlaylistId: source.id,
+    thumbnail: undefined,
+  })
+}
+
+export async function saveAsTemplate(id: string) {
+  const source = await getPlaylist(id)
+  if (!source) return undefined
+
+  return addPlaylist({
+    ...source,
+    title: `${source.title} 模板`,
+    lifecycleStatus: 'template',
     publishedAt: undefined,
     lastExportedAt: undefined,
     sourcePlaylistId: source.id,

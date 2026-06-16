@@ -3,11 +3,19 @@ import { listSongs } from '@/lib/db'
 import type { Song } from '@/types'
 
 export type SongFilters = {
+  genre: string
+  language: string
+  mood: string
+  proficiency: 'all' | Song['proficiency']
   query: string
   status: 'all' | Song['status']
 }
 
 const initialFilters: SongFilters = {
+  genre: '',
+  language: '',
+  mood: '',
+  proficiency: 'all',
   query: '',
   status: 'all',
 }
@@ -30,6 +38,9 @@ export function useSongs() {
 
   const filteredSongs = useMemo(() => {
     const query = filters.query.trim().toLowerCase()
+    const genre = filters.genre.trim().toLowerCase()
+    const language = filters.language.trim().toLowerCase()
+    const mood = filters.mood.trim().toLowerCase()
 
     return songs.filter((song) => {
       const matchesQuery =
@@ -39,8 +50,12 @@ export function useSongs() {
         song.genre?.toLowerCase().includes(query)
 
       const matchesStatus = filters.status === 'all' || song.status === filters.status
+      const matchesGenre = !genre || song.genre?.toLowerCase().includes(genre)
+      const matchesLanguage = !language || song.language?.toLowerCase().includes(language)
+      const matchesMood = !mood || song.mood?.toLowerCase().includes(mood)
+      const matchesProficiency = filters.proficiency === 'all' || song.proficiency === filters.proficiency
 
-      return matchesQuery && matchesStatus
+      return matchesQuery && matchesStatus && matchesGenre && matchesLanguage && matchesMood && matchesProficiency
     })
   }, [filters, songs])
 
