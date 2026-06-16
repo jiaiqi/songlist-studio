@@ -60,10 +60,23 @@ npm run build
 
 - 提交要聚焦、有意义。
 - 使用 conventional 风格 commit message，例如：
-  - `feat: add playlist PNG export`
-  - `docs: add project handoff and roadmap`
-  - `chore: configure React Vite tooling`
-- 不要把无关的产品、UI、基础设施改动混在同一次提交里。
+  - `feat: 歌曲行内编辑与批量操作`
+  - `docs: 添加项目分析完善计划`
+  - `chore: 配置 React Vite 工具链`
+- **使用中文描述 commit message**，简洁清晰。
+- **按功能模块原子性提交**，不要把无关的产品、UI、基础设施改动混在同一次提交里。
+- 提交类型规范：
+  - `feat`: 新功能
+  - `fix`: 修复 bug
+  - `docs`: 文档更新
+  - `style`: 代码格式调整（不影响功能）
+  - `refactor`: 重构（既不修复 bug 也不添加功能）
+  - `test`: 测试相关
+  - `chore`: 构建过程或辅助工具变动
+- 分批提交示例：
+  - docs 单独提交
+  - feat 按功能点拆分提交（如"拖拽排序"、"批量操作"各自独立提交）
+  - 一个 commit 只做一件事
 - 除非用户明确要求，不要回退用户已做的改动。
 
 ## 文档规则
@@ -90,8 +103,6 @@ npm run build
 
 - PNG 导出需要用用户自建歌单做端到端实测。
 - 首次使用引导（onboarding）和示例数据导入尚未实现。
-- 本地背景图片上传尚未实现。
-- 完整的数据备份与恢复尚未实现。
 - 长歌单分页尚未实现。
 - 自动化测试尚未添加。
 
